@@ -3,10 +3,8 @@ TLC5955 Control Library
 Used to control the TI TLC5955 LED driver chip
 Zack Phillips - zkphil@berkeley.edu
 Product Page: http://www.ti.com/product/tlc5955
-
 Copyright (c) 2015, Zachary F. Phillips
 All rights reserved.
-
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
     * Redistributions of source code must retain the above copyright
@@ -17,7 +15,6 @@ modification, are permitted provided that the following conditions are met:
     * Neither the name of the <organization> nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
 ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
 WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -57,7 +54,7 @@ void TLC5955::init(uint8_t gslat, uint16_t grayscale) {
 
 void TLC5955::setAllLED(uint16_t gsvalue) {
 	for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
-		for(int8_t a = 0; a < LED_COUNT; a++) {
+		for(int8_t a = 0; a < LEDS_PER_CHIP; a++) {
 			for(int8_t b = 0; b < COLOR_CHANNEL_COUNT; b++) {
 				_gsData[chip][a][b] = gsvalue;
 			}
@@ -103,13 +100,11 @@ void TLC5955::setControlModeBit(bool isControlMode)
 
 void TLC5955::updateLEDs() {
 	_bufferCount = 0;
- flushBuffer();
- latch();
  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--)
  {
 	 setControlModeBit(CONTROL_MODE_ON);
 	 SPI.beginTransaction(mSettings);
-		for(int8_t a = LED_COUNT-1; a >= 0; a--) { // We have 8 LED's. Start at the last since thats how we clock data out
+		for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) { // We have 8 LED's. Start at the last since thats how we clock data out
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) { // Each with 3 colors
 					SPI.transfer(_gsData[chip][a][b] >> 8);  // Output the MSB first
 					SPI.transfer(_gsData[chip][a][b] & 0xFF); // Followed by the LSB
@@ -176,7 +171,7 @@ void TLC5955::setBrightnessCurrent(uint8_t red, uint8_t green, uint8_t blue) {
 // Sets all dot correction data to the same value (default should be 255
 void TLC5955::setAllDCData(uint8_t dcvalue) {
 	for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
-		for(int8_t a = LED_COUNT-1; a>=0; a--) {
+		for(int8_t a = LEDS_PER_CHIP-1; a>=0; a--) {
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b>=0; b--) {
 				_dcData[chip][a][b] = dcvalue;
 			}
@@ -186,7 +181,7 @@ void TLC5955::setAllDCData(uint8_t dcvalue) {
 
 // Update the Control Register (changes settings)
 void TLC5955::updateControl() {
-	flushBuffer();
+	//flushBuffer();
   for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
 		_bufferCount = 0;
 		setControlModeBit(CONTROL_MODE_ON);
@@ -222,7 +217,7 @@ void TLC5955::updateControl() {
 			setBuffer((_MCR & (1<<a)));
 		}
 		// Dot Correction data
-		for(int8_t a = LED_COUNT-1; a >= 0; a--) {
+		for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) {
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) {
 				for(int8_t c = 6; c >= 0; c--) {
 					setBuffer(_dcData[chip][a][b] & (1<<c));

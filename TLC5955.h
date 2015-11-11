@@ -36,25 +36,26 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Arduino.h>
 #include <SPI.h>
 
-#define LED_COUNT 16
+#define LEDS_PER_CHIP 16
 #define COLOR_CHANNEL_COUNT 3
 #define TLC_COUNT 6
 
 // Bit Quantities (Change to match other TLC driver chips)
 #define GS_BITS 16
-#define SPI_MOSI 22
-#define SPI_CLK 21
+#define SPI_MOSI 51 // 51 on mega, 22 on teensy2.0++
+#define SPI_CLK 52 // 52 on mega, 21 on teensy2.0++
 #define GB_BITS 7
 #define MC_BITS 3
 #define FC_BITS 5
+#define DC_BITS 7
 #define CONTROL_ZERO_BITS 389 // Bits required for correct control reg size
-#define TOTAL_REGISTER_SIZE 768
+#define TOTAL_REGISTER_SIZE 76
 
 #define LATCH_DELAY 10
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
-#define SPI_BAUD_RATE 25000000
+#define SPI_BAUD_RATE 20000000
 
 class TLC5955
 {
@@ -82,13 +83,13 @@ class TLC5955
 		uint16_t _brightRed;
 		uint16_t _brightGreen;
 		uint16_t _brightBlue;
-		uint8_t _dcData[TLC_COUNT][LED_COUNT][COLOR_CHANNEL_COUNT];
+		uint8_t _dcData[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 		uint8_t _MCR;
 		uint8_t _MCG;
 		uint8_t _MCB;
 
 		// [N TLC Chips][0-15 LED][0-2 RGB]
-		uint16_t _gsData[TLC_COUNT][LED_COUNT][COLOR_CHANNEL_COUNT];
+		uint16_t _gsData[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 
 		// SPI
 		uint8_t _buffer;
