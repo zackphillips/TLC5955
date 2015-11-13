@@ -29,27 +29,33 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <TLC5955.h>
 
-SPISettings mSettings(SPI_BAUD_RATE, MSBFIRST, SPI_MODE1);
+SPISettings mSettings(SPI_BAUD_RATE, MSBFIRST, SPI_MODE0);
 
 void TLC5955::init(uint8_t gslat) {
 	_gslat = gslat;
-
-	_bufferCount = 0;
-
+	_bufferCount = 7;
 	pinMode(_gslat, OUTPUT);
-
 	digitalWrite(_gslat, LOW);
 }
 
 void TLC5955::init(uint8_t gslat, uint16_t grayscale) {
 	_gslat = gslat;
 
-	_bufferCount = 0;
+	_bufferCount = 7;
 
 	pinMode(_gslat, OUTPUT);
 	digitalWrite(_gslat, LOW);
 
 	setAllLED(grayscale);
+}
+
+void TLC5955::printByte(byte myByte){
+ for(byte mask = 0x80; mask; mask >>= 1){
+   if(mask  & myByte)
+       Serial.print('1');
+   else
+       Serial.print('0');
+ }
 }
 
 void TLC5955::setAllLED(uint16_t gsvalue) {
@@ -89,7 +95,15 @@ void TLC5955::setControlModeBit(bool isControlMode)
 		digitalWrite(SPI_CLK,HIGH);
 		digitalWrite(SPI_CLK,LOW);
 		shiftOut(SPI_MOSI,SPI_CLK,MSBFIRST,B10010110); // see datasheet HLLHLHHL
+		if (SERIAL_DEBUG){
+			Serial.print('1');
+			printByte(B10010110);
+		}
 	}else{
+
+		if (SERIAL_DEBUG)
+			Serial.print('0');
+
 		digitalWrite(SPI_MOSI,LOW); // Set MSB to LOW
 		digitalWrite(SPI_CLK,LOW); // Clock Pulse
 		digitalWrite(SPI_CLK,HIGH);
@@ -99,7 +113,7 @@ void TLC5955::setControlModeBit(bool isControlMode)
 }
 
 void TLC5955::updateLEDs() {
-	_bufferCount = 0;
+	_bufferCount = 7;
  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--)
  {
 	 setControlModeBit(CONTROL_MODE_ON);
@@ -108,6 +122,9 @@ void TLC5955::updateLEDs() {
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) { // Each with 3 colors
 					SPI.transfer(_gsData[chip][a][b] >> 8);  // Output the MSB first
 					SPI.transfer(_gsData[chip][a][b] & 0xFF); // Followed by the LSB
+					/*for(int8_t c = GS_BITS-1; c>=0; c--) {
+						setBuffer((_gsData[chip][a][b] & (1<<c)));
+					}*/
 			}
 		}
 	 SPI.endTransaction();
@@ -146,11 +163,12 @@ void TLC5955::setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB) {
 // Defines functional bits in settings - see datasheet for what
 void TLC5955::setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT) {
     uint8_t data = 0;
-	data |= DSPRPT << 1;
-	data |= TMGRST << 2;
-	data |= RFRESH << 3;
-	data |= ESPWM << 4;
+	data |= DSPRPT << 0;
+	data |= TMGRST << 1;
+	data |= RFRESH << 2;
+	data |= ESPWM << 3;
 	data |= LSDVLT << 4;
+	Serial.println(data);
 	_functionData = data;
 }
 
@@ -183,7 +201,11 @@ void TLC5955::setAllDCData(uint8_t dcvalue) {
 void TLC5955::updateControl() {
 	//flushBuffer();
   for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
-		_bufferCount = 0;
+
+		if (SERIAL_DEBUG)
+			Serial.println(' ');
+
+		_bufferCount = 7;
 		setControlModeBit(CONTROL_MODE_ON);
 
 		// Add CONTROL_ZERO_BITS blank bits to get to correct position for DC/FC
@@ -224,6 +246,8 @@ void TLC5955::updateControl() {
 				}
 			}
 		}
+		if (SERIAL_DEBUG)
+			Serial.println(' ');
 	}
 	latch();
 }
@@ -240,12 +264,15 @@ void TLC5955::latch()
 // interface once we accumulate 8 bits
 void TLC5955::setBuffer(uint8_t bit){
 	bitWrite(_buffer, _bufferCount, bit);
-	_bufferCount++;
+	_bufferCount--;
     SPI.beginTransaction(mSettings);
-	if(_bufferCount == 8)
+	if(_bufferCount == -1)
 	{
+		if (SERIAL_DEBUG)
+			printByte(_buffer);
+
 		SPI.transfer(_buffer);
-		_bufferCount = 0;
+		_bufferCount = 7;
 		_buffer = 0;
 	}
 	SPI.endTransaction();

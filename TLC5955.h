@@ -57,6 +57,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define SPI_BAUD_RATE 20000000
 
+#define SERIAL_DEBUG 1
+
 class TLC5955
 {
 	public:
@@ -76,6 +78,7 @@ class TLC5955
 		void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
     void flushBuffer();
 		void latch();
+		void printByte(byte myByte);
 
 	private:
 		uint8_t _gslat;
@@ -93,7 +96,7 @@ class TLC5955
 
 		// SPI
 		uint8_t _buffer;
-		uint8_t _bufferCount;
+		int8_t _bufferCount;
 };
 
 #endif
