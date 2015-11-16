@@ -1,69 +1,80 @@
 /*
  * TLC5955 Example Program
  * Zack Phillips, zkphil@berkeley.edu
- * Updated 10/28/2015
+ * Updated 11/16/2015
  */
-
 
 #include <TLC5955.h>
 #include <SPI.h>
 
 TLC5955 tlc;
 
-#define GSCLK 16
-#define LAT 15
+#define GSCLK 10 // On Arduino Mega
+#define LAT 44   // On Arduino Mega
+
 
 void setup() {
 // Now set the GSCKGRB to an output and a 50% PWM duty-cycle
   // For simplicity all three grayscale clocks are tied to the same pin
   pinMode(GSCLK, OUTPUT);
   pinMode(LAT,OUTPUT);
+
+  // Adjust PWM timer (Specific to each microcontroller)
+  TCCR2B = TCCR2B & 0b11111000 | 0x01;
+
+  // Set up clock pulse
   analogWrite(GSCLK, 127);
 
   // The library does not ininiate SPI for you, so as to prevent issues with other SPI libraries
   SPI.begin();
-  //SPI.setClockDivider(SPI_CLOCK_DIV2);
 
   // init(GSLAT pin, XBLNK pin, default grayscale values for all LEDS)
   tlc.init(LAT);
 
   // We must set dot correction values, so set them all to the brightest adjustment
-  tlc.setAllDCData(127);
+  tlc.setAllDcData(127);
 
   // Set Max Current Values (see TLC5955 datasheet)
-  tlc.setMaxCurrent(5,5,5);
+  tlc.setMaxCurrent(4,4,4);
 
   // Set Function Control Data Latch values. See the TLC5955 Datasheet for the purpose of this latch.
-  // void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
-  tlc.setFunctionData(true, true, false, true, false);
+  //tlc.setFunctionData(false, true, true, false, true); // WORKS with fast update
+  tlc.setFunctionData(true, false, false, true, true);   // WORKS generally
 
   // set all brightness levels to max (127)
-  tlc.setBrightnessCurrent(127,2,2);
+  int currentVal = 127;
+  tlc.setBrightnessCurrent(currentVal,currentVal,currentVal);
 
-  // Finally, call the function to send the data to the TLC5955
-  //tlc.setLED(7,65535,65535,65535);
+  // Update Control Register
   tlc.updateControl();
 
   // Update the GS register (ideally LEDs should be dark up to here)
-  tlc.setAllLED(0);
-  tlc.updateLEDs();
-
-  // Start Serial Connection to PC
-  Serial.begin(9600);
+  tlc.setAllLed(0);
+  tlc.updateLeds();
 }
 
 void loop() {
+  tlc.setAllLed(0);
+  int led=7;
+  int16_t mDelay = 100;
 
-  //tlc.flushBuffer();
-  int mDelay = 300;
-  int16_t r = 65535;
-  int16_t g = 65535;
-  int16_t b = 65535;
-  for (int led=0; led<16; led++)
+  int16_t dimMax = 60000;
+  int16_t dimDelta = 4000;
+
+  // PWM Dimming
+  for (uint16_t dimVal = 0; dimVal <= dimMax; dimVal += dimDelta)
   {
-    tlc.setAllLED(0);
-    tlc.setLED(led,r,g,b);
-    tlc.updateLEDs();
     delay(mDelay);
+    tlc.setAllLed(0);
+    tlc.setLed(led,dimVal,dimVal,dimVal);
+    tlc.updateLeds();
+  }
+
+  for (uint16_t dimVal = dimMax; dimVal >= dimDelta; dimVal -= dimDelta)
+  {
+    delay(mDelay);
+    tlc.setAllLed(0);
+    tlc.setLed(led,dimVal,dimVal,dimVal);
+    tlc.updateLeds();
   }
 }

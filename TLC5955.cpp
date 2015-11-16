@@ -38,17 +38,6 @@ void TLC5955::init(uint8_t gslat) {
 	digitalWrite(_gslat, LOW);
 }
 
-void TLC5955::init(uint8_t gslat, uint16_t grayscale) {
-	_gslat = gslat;
-
-	_bufferCount = 7;
-
-	pinMode(_gslat, OUTPUT);
-	digitalWrite(_gslat, LOW);
-
-	setAllLED(grayscale);
-}
-
 void TLC5955::printByte(byte myByte){
  for(byte mask = 0x80; mask; mask >>= 1){
    if(mask  & myByte)
@@ -58,12 +47,22 @@ void TLC5955::printByte(byte myByte){
  }
 }
 
-void TLC5955::setAllLED(uint16_t gsvalue) {
+void TLC5955::setAllLed(uint16_t gsvalue) {
 	for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
 		for(int8_t a = 0; a < LEDS_PER_CHIP; a++) {
 			for(int8_t b = 0; b < COLOR_CHANNEL_COUNT; b++) {
 				_gsData[chip][a][b] = gsvalue;
 			}
+		}
+	}
+}
+
+void TLC5955::setAllLed(uint16_t red, uint16_t green, uint16_t blue) {
+	for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
+		for(int8_t channel = 0; channel < LEDS_PER_CHIP; channel++) {
+			_gsData[chip][channel][2] = blue;
+			_gsData[chip][channel][1] = green;
+			_gsData[chip][channel][0] = red;
 		}
 	}
 }
@@ -79,7 +78,9 @@ void TLC5955::flushBuffer()
 
 void TLC5955::setControlModeBit(bool isControlMode)
 {
+	// Make sure latch is low
   digitalWrite(_gslat,LOW);
+
 	// Turn off SPI Temporarily
 	SPI.end();
 
@@ -100,7 +101,6 @@ void TLC5955::setControlModeBit(bool isControlMode)
 			printByte(B10010110);
 		}
 	}else{
-
 		if (SERIAL_DEBUG)
 			Serial.print('0');
 
@@ -112,7 +112,7 @@ void TLC5955::setControlModeBit(bool isControlMode)
 	SPI.begin();
 }
 
-void TLC5955::updateLEDs() {
+void TLC5955::updateLeds() {
 	_bufferCount = 7;
  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--)
  {
@@ -122,9 +122,6 @@ void TLC5955::updateLEDs() {
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) { // Each with 3 colors
 					SPI.transfer(_gsData[chip][a][b] >> 8);  // Output the MSB first
 					SPI.transfer(_gsData[chip][a][b] & 0xFF); // Followed by the LSB
-					/*for(int8_t c = GS_BITS-1; c>=0; c--) {
-						setBuffer((_gsData[chip][a][b] & (1<<c)));
-					}*/
 			}
 		}
 	 SPI.endTransaction();
@@ -132,7 +129,7 @@ void TLC5955::updateLEDs() {
 latch();
 }
 
-void TLC5955::setLED(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue) {
+void TLC5955::setLed(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue) {
 	uint8_t chip = (uint16_t)floor(ledNum/16);
   uint8_t channel =  (uint8_t)(ledNum-16*chip); //Turn that LED on
 	_gsData[chip][channel][2] = blue;
@@ -140,24 +137,38 @@ void TLC5955::setLED(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blu
 	_gsData[chip][channel][0] = red;
 }
 
+void TLC5955::setLed(uint16_t ledNum, uint16_t rgb) {
+	uint8_t chip = (uint16_t)floor(ledNum/16);
+  uint8_t channel =  (uint8_t)(ledNum-16*chip); //Turn that LED on
+	_gsData[chip][channel][2] = rgb;
+	_gsData[chip][channel][1] = rgb;
+	_gsData[chip][channel][0] = rgb;
+}
+
 void TLC5955::setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB) {
     // Ensure max Current agrees with datasheet (3-bit)
-	if (MCR > 7)
-		MCR = 7;
-    else
+		if (MCR > 7)
+			 MCR = 7;
 		_MCR = MCR;
 
     // Ensure max Current agrees with datasheet (3-bit)
-	if (MCG > 7)
-		MCG = 7;
-    else
+		if (MCG > 7)
+		 	 MCG = 7;
 		_MCG = MCG;
 
     // Ensure max Current agrees with datasheet (3-bit)
     if (MCB > 7)
-		MCB = 7;
-    else
+			 MCB = 7;
 		_MCB = MCB;
+}
+
+void TLC5955::setMaxCurrent(uint8_t MCRGB) {
+    // Ensure max Current agrees with datasheet (3-bit)
+	if (MCRGB > 7)
+		MCRGB = 7;
+	_MCR = MCRGB;
+	_MCG = MCRGB;
+	_MCB = MCRGB;
 }
 
 // Defines functional bits in settings - see datasheet for what
@@ -173,10 +184,10 @@ void TLC5955::setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM,
 }
 
 // Set Brightness through CURRENT from 10-100% of value set in function mode
-void TLC5955::setBrightnessCurrent(uint8_t global) {
-	_brightRed = global;
-	_brightGreen = global;
-	_brightBlue = global;
+void TLC5955::setBrightnessCurrent(uint8_t rgb) {
+	_brightRed = rgb;
+	_brightGreen = rgb;
+	_brightBlue = rgb;
 }
 
 // Set Brightness through CURRENT from 10-100% of value set in function mode
@@ -187,7 +198,7 @@ void TLC5955::setBrightnessCurrent(uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 // Sets all dot correction data to the same value (default should be 255
-void TLC5955::setAllDCData(uint8_t dcvalue) {
+void TLC5955::setAllDcData(uint8_t dcvalue) {
 	for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
 		for(int8_t a = LEDS_PER_CHIP-1; a>=0; a--) {
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b>=0; b--) {
@@ -195,6 +206,15 @@ void TLC5955::setAllDCData(uint8_t dcvalue) {
 			}
 		}
 	}
+}
+
+void TLC5955::setLedDc(uint16_t ledNum, uint8_t dcR, uint8_t dcG, uint8_t dcB)
+{
+	uint8_t chip = (uint16_t)floor(ledNum/16);
+	uint8_t channel =  (uint8_t)(ledNum-16*chip); //Turn that LED on
+	_dcData[chip][channel][2] = dcB;
+	_dcData[chip][channel][1] = dcG;
+	_dcData[chip][channel][0] = dcR;
 }
 
 // Update the Control Register (changes settings)

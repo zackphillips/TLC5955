@@ -14,7 +14,7 @@ modification, are permitted provided that the following conditions are met:
     * Redistributions in binary form must reproduce the above copyright
       notice, this list of conditions and the following disclaimer in the
       documentation and/or other materials provided with the distribution.
-    * Neither the name of the <organization> nor the
+    * Neither the name of Zack Phillips / UC Berkeley nor the
       names of its contributors may be used to endorse or promote products
       derived from this software without specific prior written permission.
 
@@ -57,27 +57,39 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define SPI_BAUD_RATE 20000000
 
-#define SERIAL_DEBUG 1
+#define SERIAL_DEBUG 0
 
 class TLC5955
 {
 	public:
+
+		// Initialization
 		void init(uint8_t gslat);
-		void init(uint8_t gslat, uint16_t grayscale);
-		void setControlModeBit(bool isControlMode);
-		void setAllLED(uint16_t gsvalue);
-		void updateLEDs();
-		void setLED(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue);
-		void setFunctionData(uint8_t data);
+
+		// Setting individual LED intensities
+		void setAllLed(uint16_t gsvalue);
+		void setAllLed(uint16_t red, uint16_t green, uint16_t blue);
+		void setLed(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue);
+		void setLed(uint16_t ledNum, uint16_t rgb);
+
+    // Control Mode Parameters
 		void setBrightnessCurrent(uint8_t global);
 		void setBrightnessCurrent(uint8_t red, uint8_t green, uint8_t blue);
-		void setAllDCData(uint8_t dcvalue);
-		void updateControl();
-		void setBuffer(uint8_t bit);
+		void setAllDcData(uint8_t dcvalue);
+		void setLedDc(uint16_t ledNum, uint8_t dcR, uint8_t dcG, uint8_t dcB);
 		void setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB);
+		void setMaxCurrent(uint8_t MCRGB);
 		void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
+
+		// Sending data to device (Updating, flushing, latching)
+		void setBuffer(uint8_t bit);
+		void setControlModeBit(bool isControlMode);
     void flushBuffer();
+	  void updateLeds();
 		void latch();
+		void updateControl();
+
+		// Diagnostic Methods
 		void printByte(byte myByte);
 
 	private:
