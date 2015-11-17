@@ -72,7 +72,7 @@ void TLC5955::flushBuffer()
 	setControlModeBit(CONTROL_MODE_OFF);
   SPI.beginTransaction(mSettings);
   for (int16_t fCount=0; fCount < TLC_COUNT*TOTAL_REGISTER_SIZE/8; fCount++)
- 	 SPI.transfer(0);
+ 	   SPI.transfer(0);
   SPI.endTransaction();
 }
 
@@ -101,6 +101,7 @@ void TLC5955::setControlModeBit(bool isControlMode)
 			printByte(B10010110);
 		}
 	}else{
+
 		if (SERIAL_DEBUG)
 			Serial.print('0');
 
@@ -113,19 +114,33 @@ void TLC5955::setControlModeBit(bool isControlMode)
 }
 
 void TLC5955::updateLeds() {
-	_bufferCount = 7;
+
+ if(SERIAL_DEBUG){
+	 Serial.println(F("Begin LED Update String (All Chips)..."));
+	 Serial.println(' ');
+ }
+
  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--)
  {
-	 setControlModeBit(CONTROL_MODE_ON);
+	 setControlModeBit(CONTROL_MODE_OFF);
 	 SPI.beginTransaction(mSettings);
 		for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) { // We have 8 LED's. Start at the last since thats how we clock data out
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) { // Each with 3 colors
-					SPI.transfer(_gsData[chip][a][b] >> 8);  // Output the MSB first
-					SPI.transfer(_gsData[chip][a][b] & 0xFF); // Followed by the LSB
+					SPI.transfer((char)(_gsData[chip][a][b] >> 8));  // Output the MSB first
+					SPI.transfer((char)(_gsData[chip][a][b] & 0xFF)); // Followed by the LSB
+
+					if(SERIAL_DEBUG){
+						printByte((char)(_gsData[chip][a][b] >> 8));
+						printByte((char)(_gsData[chip][a][b] & 0xFF));
+					}
 			}
 		}
 	 SPI.endTransaction();
  }
+if(SERIAL_DEBUG){
+  Serial.println(' ');
+	Serial.println(F("End LED Update String (All Chips)"));
+}
 latch();
 }
 
@@ -223,7 +238,7 @@ void TLC5955::updateControl() {
   for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
 
 		if (SERIAL_DEBUG)
-			Serial.println(' ');
+			Serial.println('Starting Control Mode...');
 
 		_bufferCount = 7;
 		setControlModeBit(CONTROL_MODE_ON);
