@@ -1,0 +1,34 @@
+[Eagle]
+Version="07 05 00"
+Platform="Mac OS X"
+Serial="62191E841E-LSR-WLM-1EL"
+Globals="Globals"
+Desktop="Desktop"
+
+[Globals]
+AutoSaveProject=1
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/JJR.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/LilyPad-Wearables.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/PP_Connectors.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Aesthetics.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-AnalogIC.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Boards.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Capacitors.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Connectors.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-DigitalIC.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-DiscreteSemi.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Displays.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Electromechanical.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-FreqCtrl.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-LED.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Passives.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-PowerIC.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-RF.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Resistors.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Retired.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/SparkFun-Sensors.lbr"
+UsedLibrary="/Users/zfphil/Google Drive/Repository/EAGLE/lbr/ZacksLib.lbr"
+UsedLibrary="/Users/zfphil/develop/ledArrayPcbDesigns/lib/WallerLabLib.lbr"
+
+[Desktop]
+Screen="1440 900"

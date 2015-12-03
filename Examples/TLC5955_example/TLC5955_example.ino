@@ -12,6 +12,12 @@ TLC5955 tlc;
 #define GSCLK 10 // On Arduino Mega
 #define LAT 44   // On Arduino Mega
 
+// Spi pins are needed to send out control bit (SPI only supports bytes)
+#define SPI_MSI 51 // On Arduino Mega
+#define SPI_CLK 52 // ON Arduino Mega
+
+#define TLC_COUNT 1;
+
 
 void setup() {
 // Now set the GSCKGRB to an output and a 50% PWM duty-cycle
@@ -29,7 +35,7 @@ void setup() {
   SPI.begin();
 
   // init(GSLAT pin, XBLNK pin, default grayscale values for all LEDS)
-  tlc.init(LAT);
+  tlc.init(LAT, SPI_MOSI,SPI_CLK,TLC_COUNT);
 
   // We must set dot correction values, so set them all to the brightest adjustment
   tlc.setAllDcData(127);

@@ -31,8 +31,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SPISettings mSettings(SPI_BAUD_RATE, MSBFIRST, SPI_MODE0);
 
-void TLC5955::init(uint8_t gslat) {
+void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk) {
 	_gslat = gslat;
+	_spi_clk = spi_clk;
+	_spi_mosi = spi_mosi;
 	_bufferCount = 7;
 	pinMode(_gslat, OUTPUT);
 	digitalWrite(_gslat, LOW);
@@ -85,17 +87,17 @@ void TLC5955::setControlModeBit(bool isControlMode)
 	SPI.end();
 
 	// Enable digital IO
-	pinMode(SPI_MOSI,OUTPUT);
-	pinMode(SPI_CLK,OUTPUT);
+	pinMode(_spi_mosi,OUTPUT);
+	pinMode(_spi_clk,OUTPUT);
 
 	// Manually write control sequence
 	if (isControlMode){
 	  // Manually Write control sequence
-	  digitalWrite(SPI_MOSI,HIGH); // Set MSB to HIGH
-		digitalWrite(SPI_CLK,LOW); // Clock Pulse
-		digitalWrite(SPI_CLK,HIGH);
-		digitalWrite(SPI_CLK,LOW);
-		shiftOut(SPI_MOSI,SPI_CLK,MSBFIRST,B10010110); // see datasheet HLLHLHHL
+	  digitalWrite(_spi_mosi,HIGH); // Set MSB to HIGH
+		digitalWrite(_spi_clk,LOW); // Clock Pulse
+		digitalWrite(_spi_clk,HIGH);
+		digitalWrite(_spi_clk,LOW);
+		shiftOut(_spi_mosi,_spi_clk,MSBFIRST,B10010110); // see datasheet HLLHLHHL
 		if (SERIAL_DEBUG){
 			Serial.print('1');
 			printByte(B10010110);
@@ -105,10 +107,10 @@ void TLC5955::setControlModeBit(bool isControlMode)
 		if (SERIAL_DEBUG)
 			Serial.print('0');
 
-		digitalWrite(SPI_MOSI,LOW); // Set MSB to LOW
-		digitalWrite(SPI_CLK,LOW); // Clock Pulse
-		digitalWrite(SPI_CLK,HIGH);
-		digitalWrite(SPI_CLK,LOW);
+		digitalWrite(_spi_mosi,LOW); // Set MSB to LOW
+		digitalWrite(_spi_clk,LOW); // Clock Pulse
+		digitalWrite(_spi_clk,HIGH);
+		digitalWrite(_spi_clk,LOW);
 	}
 	SPI.begin();
 }
@@ -238,7 +240,7 @@ void TLC5955::updateControl() {
   for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
 
 		if (SERIAL_DEBUG)
-			Serial.println('Starting Control Mode...');
+			Serial.println("Starting Control Mode...");
 
 		_bufferCount = 7;
 		setControlModeBit(CONTROL_MODE_ON);
@@ -281,6 +283,7 @@ void TLC5955::updateControl() {
 				}
 			}
 		}
+
 		if (SERIAL_DEBUG)
 			Serial.println(' ');
 	}
@@ -290,8 +293,8 @@ void TLC5955::updateControl() {
 void TLC5955::latch()
 {
 	digitalWrite(_gslat, LOW);
-	delayMicroseconds(LATCH_DELAY);
 	digitalWrite(_gslat, HIGH);
+	delayMicroseconds(LATCH_DELAY);
 	digitalWrite(_gslat, LOW);
 }
 
