@@ -236,58 +236,59 @@ void TLC5955::setLedDc(uint16_t ledNum, uint8_t dcR, uint8_t dcG, uint8_t dcB)
 
 // Update the Control Register (changes settings)
 void TLC5955::updateControl() {
-	//flushBuffer();
-  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
+	for (int8_t repeatCtr =0; repeatCtr<CONTROL_WRITE_COUNT; repeatCtr++)
+	{		
+	  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
+			if (SERIAL_DEBUG)
+				Serial.println("Starting Control Mode...");
 
-		if (SERIAL_DEBUG)
-			Serial.println("Starting Control Mode...");
+			_bufferCount = 7;
+			setControlModeBit(CONTROL_MODE_ON);
 
-		_bufferCount = 7;
-		setControlModeBit(CONTROL_MODE_ON);
-
-		// Add CONTROL_ZERO_BITS blank bits to get to correct position for DC/FC
-		for(int16_t a = 0; a < CONTROL_ZERO_BITS; a++) {
-			setBuffer(0);
-		}
-		// 5-bit Function Data
-		for(int8_t a = FC_BITS-1; a >= 0; a--) {
-			setBuffer((_functionData & (1<<a)));
-		}
-		// Blue Brightness
-		for(int8_t a = GB_BITS-1; a >= 0; a--) {
-			setBuffer((_brightBlue & (1<<a)));
-		}
-		// Green Brightness
-		for(int8_t a = GB_BITS-1; a >= 0; a--) {
-			setBuffer((_brightGreen & (1<<a)));
-		}
-		// Red Brightness
-		for(int8_t a = GB_BITS-1; a >= 0; a--) {
-			setBuffer((_brightRed & (1<<a)));
-		}
-		// Maximum Current Data
-		for(int8_t a = MC_BITS-1; a >= 0; a--) {
-			setBuffer((_MCB & (1<<a)));
-		}
-		for(int8_t a = MC_BITS-1; a >= 0; a--) {
-			setBuffer((_MCG & (1<<a)));
-		}
-		for(int8_t a = MC_BITS-1; a >= 0; a--) {
-			setBuffer((_MCR & (1<<a)));
-		}
-		// Dot Correction data
-		for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) {
-			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) {
-				for(int8_t c = 6; c >= 0; c--) {
-					setBuffer(_dcData[chip][a][b] & (1<<c));
+			// Add CONTROL_ZERO_BITS blank bits to get to correct position for DC/FC
+			for(int16_t a = 0; a < CONTROL_ZERO_BITS; a++) {
+				setBuffer(0);
+			}
+			// 5-bit Function Data
+			for(int8_t a = FC_BITS-1; a >= 0; a--) {
+				setBuffer((_functionData & (1<<a)));
+			}
+			// Blue Brightness
+			for(int8_t a = GB_BITS-1; a >= 0; a--) {
+				setBuffer((_brightBlue & (1<<a)));
+			}
+			// Green Brightness
+			for(int8_t a = GB_BITS-1; a >= 0; a--) {
+				setBuffer((_brightGreen & (1<<a)));
+			}
+			// Red Brightness
+			for(int8_t a = GB_BITS-1; a >= 0; a--) {
+				setBuffer((_brightRed & (1<<a)));
+			}
+			// Maximum Current Data
+			for(int8_t a = MC_BITS-1; a >= 0; a--) {
+				setBuffer((_MCB & (1<<a)));
+			}
+			for(int8_t a = MC_BITS-1; a >= 0; a--) {
+				setBuffer((_MCG & (1<<a)));
+			}
+			for(int8_t a = MC_BITS-1; a >= 0; a--) {
+				setBuffer((_MCR & (1<<a)));
+			}
+			// Dot Correction data
+			for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) {
+				for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) {
+					for(int8_t c = 6; c >= 0; c--) {
+						setBuffer(_dcData[chip][a][b] & (1<<c));
+					}
 				}
 			}
-		}
 
-		if (SERIAL_DEBUG)
-			Serial.println(' ');
+			if (SERIAL_DEBUG)
+				Serial.println(' ');
+		}
+		latch();
 	}
-	latch();
 }
 
 void TLC5955::latch()
