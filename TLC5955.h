@@ -72,6 +72,7 @@ class TLC5955
 		void setAllLed(uint16_t red, uint16_t green, uint16_t blue);
 		void setLed(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue);
 		void setLed(uint16_t ledNum, uint16_t rgb);
+		void setLedAppend(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue);
 
     // Control Mode Parameters
 		void setBrightnessCurrent(uint8_t global);
@@ -81,6 +82,7 @@ class TLC5955
 		void setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB);
 		void setMaxCurrent(uint8_t MCRGB);
 		void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
+		void setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos);
 
 		// Sending data to device (Updating, flushing, latching)
 		void setBuffer(uint8_t bit);
@@ -105,6 +107,8 @@ class TLC5955
 		uint8_t _MCR;
 		uint8_t _MCG;
 		uint8_t _MCB;
+
+		uint8_t _rgbOrder[3];
 
 		// [N TLC Chips][0-15 LED][0-2 RGB]
 		uint16_t _gsData[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
