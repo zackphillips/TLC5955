@@ -4,6 +4,12 @@
 *.o
 *.obj
 
+# Eagle files
+*.lck
+*.s#
+*.b#
+*.epf
+
 # Precompiled Headers
 *.gch
 *.pch

@@ -13,10 +13,8 @@ TLC5955 tlc;
 #define LAT 44   // On Arduino Mega
 
 // Spi pins are needed to send out control bit (SPI only supports bytes)
-#define SPI_MSI 51 // On Arduino Mega
-#define SPI_CLK 52 // ON Arduino Mega
-
-#define TLC_COUNT 1;
+#define SPI_MOSI 11 // 51 on mega, 22 on teensy2.0++
+#define SPI_CLK 13 // 52 on mega, 21 on teensy2.0++
 
 
 void setup() {
@@ -26,7 +24,7 @@ void setup() {
   pinMode(LAT,OUTPUT);
 
   // Adjust PWM timer (Specific to each microcontroller)
-  TCCR2B = TCCR2B & 0b11111000 | 0x01;
+  //TCCR2B = TCCR2B & 0b11111000 | 0x01;
 
   // Set up clock pulse
   analogWrite(GSCLK, 127);
@@ -35,7 +33,7 @@ void setup() {
   SPI.begin();
 
   // init(GSLAT pin, XBLNK pin, default grayscale values for all LEDS)
-  tlc.init(LAT, SPI_MOSI,SPI_CLK,TLC_COUNT);
+  tlc.init(LAT, SPI_MOSI,SPI_CLK);
 
   // We must set dot correction values, so set them all to the brightest adjustment
   tlc.setAllDcData(127);

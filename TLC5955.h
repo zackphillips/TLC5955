@@ -42,8 +42,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Bit Quantities (Change to match other TLC driver chips)
 #define GS_BITS 16
-//#define SPI_MOSI 11 // 51 on mega, 22 on teensy2.0++
-//#define SPI_CLK 13 // 52 on mega, 21 on teensy2.0++
 #define GB_BITS 7
 #define MC_BITS 3
 #define FC_BITS 5
@@ -65,6 +63,7 @@ class TLC5955
 	public:
 
 		// Initialization
+		//void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk);
 		void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk);
 
 		// Setting individual LED intensities
@@ -99,6 +98,7 @@ class TLC5955
 		uint8_t _gslat;
 		uint8_t _spi_mosi;
 		uint8_t _spi_clk;
+		uint8_t _tlc_count;
 		uint8_t _functionData;
 		uint16_t _brightRed;
 		uint16_t _brightGreen;
@@ -108,7 +108,7 @@ class TLC5955
 		uint8_t _MCG;
 		uint8_t _MCB;
 
-		uint8_t _rgbOrder[3];
+		uint8_t _rgbOrder[COLOR_CHANNEL_COUNT];
 
 		// [N TLC Chips][0-15 LED][0-2 RGB]
 		uint16_t _gsData[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
