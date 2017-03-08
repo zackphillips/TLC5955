@@ -38,7 +38,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define LEDS_PER_CHIP 16
 #define COLOR_CHANNEL_COUNT 3
-#define TLC_COUNT 10
+#define TLC_COUNT 37
 
 // Bit Quantities (Change to match other TLC driver chips)
 #define GS_BITS 16
@@ -54,7 +54,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
-#define SPI_BAUD_RATE 2000000
+#define SPI_BAUD_RATE 10000000
 
 #define SERIAL_DEBUG 0
 
@@ -82,6 +82,7 @@ class TLC5955
 		void setMaxCurrent(uint8_t MCRGB);
 		void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
 		void setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos);
+		void setRgbPinOrderSingle(uint16_t channel, uint8_t rPos, uint8_t grPos, uint8_t bPos);
 
 		// Sending data to device (Updating, flushing, latching)
 		void setBuffer(uint8_t bit);
@@ -108,7 +109,7 @@ class TLC5955
 		uint8_t _MCG;
 		uint8_t _MCB;
 
-		uint8_t _rgbOrder[COLOR_CHANNEL_COUNT];
+		uint8_t _rgbOrder[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 
 		// [N TLC Chips][0-15 LED][0-2 RGB]
 		uint16_t _gsData[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
