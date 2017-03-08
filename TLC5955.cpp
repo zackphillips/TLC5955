@@ -36,20 +36,31 @@ void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk) {
 	_spi_clk = spi_clk;
 	_spi_mosi = spi_mosi;
 	_bufferCount = 7;
-	_rgbOrder[0]=0; _rgbOrder[1]=1; _rgbOrder[2]=2;
 	pinMode(_gslat, OUTPUT);
 	digitalWrite(_gslat, LOW);
 }
 
 void TLC5955::setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos)
 {
-	if (rPos < 3)
-		_rgbOrder[0] = rPos;
-	if (grPos < 3)
-		_rgbOrder[1] = grPos;
-	if (bPos < 3)
-		_rgbOrder[2] = bPos;
+		for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
+			for(int8_t channel = 0; channel < LEDS_PER_CHIP; channel++) {
+					_rgbOrder[chip][channel][0] = rPos;
+					_rgbOrder[chip][channel][1] = grPos;
+					_rgbOrder[chip][channel][2] = bPos;
+			}
+		}
 }
+
+void TLC5955::setRgbPinOrderSingle(uint16_t ledNum, uint8_t rPos, uint8_t grPos, uint8_t bPos)
+{
+	uint8_t chip = (uint16_t)floor(ledNum/16);
+	uint8_t channel =  (uint8_t)(ledNum-16*chip); //Turn that LED on
+	_rgbOrder[chip][channel][0] = rPos;
+	_rgbOrder[chip][channel][1] = grPos;
+	_rgbOrder[chip][channel][2] = bPos;
+}
+
+
 
 void TLC5955::printByte(byte myByte){
  for(byte mask = 0x80; mask; mask >>= 1){
@@ -138,9 +149,9 @@ void TLC5955::updateLeds() {
 	 setControlModeBit(CONTROL_MODE_OFF);
 	 SPI.beginTransaction(mSettings);
 	 uint8_t cChan;
-		for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) { // We have 8 LED's. Start at the last since thats how we clock data out
+		for(int8_t a = LEDS_PER_CHIP-1; a >= 0; a--) { // We have 16 LED's. Start at the last since thats how we clock data out
 			for(int8_t b = COLOR_CHANNEL_COUNT-1; b >= 0; b--) { // Each with 3 colors
-					cChan =_rgbOrder[b];
+					cChan =_rgbOrder[chip][a][b];
 					SPI.transfer((char)(_gsData[chip][a][cChan] >> 8));  // Output the MSB first
 					SPI.transfer((char)(_gsData[chip][a][cChan] & 0xFF)); // Followed by the LSB
 
