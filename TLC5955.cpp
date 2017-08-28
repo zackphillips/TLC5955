@@ -343,6 +343,29 @@ void TLC5955::latch()
 	digitalWrite(_gslat, LOW);
 }
 
+uint8_t * TLC5955::getChannelRgbPinOrder(uint16_t channelNum)
+{
+	uint8_t* chanVals = new uint8_t[3];
+	uint8_t chip = (uint16_t)floor(channelNum/16);
+	uint8_t channel =  (uint8_t)(channelNum-16*chip);
+	chanVals[0] = _rgbOrder[chip][channel][0];
+	chanVals[1] = _rgbOrder[chip][channel][1];
+	chanVals[2] = _rgbOrder[chip][channel][2];
+	return chanVals;
+}
+
+// Get a single channel's current values
+uint16_t * TLC5955::getChannelValue(uint16_t channelNum)
+{
+	uint16_t* ledVals = new uint16_t[3];
+	uint8_t chip = (uint16_t)floor(channelNum/16);
+	uint8_t channel =  (uint8_t)(channelNum-16*chip);
+	ledVals[0] = _gsData[chip][channel][0];
+	ledVals[1] = _gsData[chip][channel][1];
+	ledVals[2] = _gsData[chip][channel][2];
+	return ledVals;
+}
+
 // SPI interface - accumulates single bits, then sends over SPI
 // interface once we accumulate 8 bits
 void TLC5955::setBuffer(uint8_t bit){
