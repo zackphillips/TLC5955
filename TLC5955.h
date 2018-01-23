@@ -56,7 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define SPI_BAUD_RATE 10000000
 
-#define SERIAL_DEBUG 0
+#define DEBUG_TLC 0
 
 class TLC5955
 {
@@ -72,7 +72,7 @@ class TLC5955
 		void setLed(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue);
 		void setLed(uint16_t ledNum, uint16_t rgb);
 		void setLedAppend(uint16_t ledNum, uint16_t red, uint16_t green, uint16_t blue);
-		
+
 		// Get LED Intensities
 		uint16_t * getChannelValue(uint16_t channelNum);
 		uint8_t * getChannelRgbPinOrder(uint16_t channelNum);

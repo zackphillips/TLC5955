@@ -120,13 +120,13 @@ void TLC5955::setControlModeBit(bool isControlMode)
 		digitalWrite(_spi_clk,HIGH);
 		digitalWrite(_spi_clk,LOW);
 		shiftOut(_spi_mosi,_spi_clk,MSBFIRST,B10010110); // see datasheet HLLHLHHL
-		if (SERIAL_DEBUG){
+		if (DEBUG_TLC){
 			Serial.print('1');
 			printByte(B10010110);
 		}
 	}else{
 
-		if (SERIAL_DEBUG)
+		if (DEBUG_TLC)
 			Serial.print('0');
 
 		digitalWrite(_spi_mosi,LOW); // Set MSB to LOW
@@ -139,7 +139,7 @@ void TLC5955::setControlModeBit(bool isControlMode)
 
 void TLC5955::updateLeds() {
 
- if(SERIAL_DEBUG){
+ if(DEBUG_TLC){
 	 Serial.println(F("Begin LED Update String (All Chips)..."));
 	 Serial.println(' ');
  }
@@ -155,7 +155,7 @@ void TLC5955::updateLeds() {
 					SPI.transfer((char)(_gsData[chip][a][cChan] >> 8));  // Output the MSB first
 					SPI.transfer((char)(_gsData[chip][a][cChan] & 0xFF)); // Followed by the LSB
 
-					if(SERIAL_DEBUG){
+					if(DEBUG_TLC){
 						printByte((char)(_gsData[chip][a][cChan] >> 8));
 						printByte((char)(_gsData[chip][a][cChan] & 0xFF));
 					}
@@ -163,7 +163,7 @@ void TLC5955::updateLeds() {
 		}
 	 SPI.endTransaction();
  }
-if(SERIAL_DEBUG){
+if(DEBUG_TLC){
   Serial.println(' ');
 	Serial.println(F("End LED Update String (All Chips)"));
 }
@@ -240,7 +240,6 @@ void TLC5955::setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM,
 	data |= RFRESH << 2;
 	data |= ESPWM << 3;
 	data |= LSDVLT << 4;
-	Serial.println(data);
 	_functionData = data;
 }
 
@@ -283,7 +282,7 @@ void TLC5955::updateControl() {
 	for (int8_t repeatCtr =0; repeatCtr<CONTROL_WRITE_COUNT; repeatCtr++)
 	{
 	  for(int8_t chip = TLC_COUNT-1; chip>=0; chip--) {
-			if (SERIAL_DEBUG)
+			if (DEBUG_TLC)
 				Serial.println("Starting Control Mode...");
 
 			_bufferCount = 7;
@@ -328,7 +327,7 @@ void TLC5955::updateControl() {
 				}
 			}
 
-			if (SERIAL_DEBUG)
+			if (DEBUG_TLC)
 				Serial.println(' ');
 		}
 		latch();
@@ -374,7 +373,7 @@ void TLC5955::setBuffer(uint8_t bit){
     SPI.beginTransaction(mSettings);
 	if(_bufferCount == -1)
 	{
-		if (SERIAL_DEBUG)
+		if (DEBUG_TLC)
 			printByte(_buffer);
 
 		SPI.transfer(_buffer);
