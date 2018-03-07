@@ -30,14 +30,15 @@
    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef TLC5955_h
-#define TLC5955_h
+#ifndef TLC5955_H
+#define TLC5955_H
 
 #include <Arduino.h>
 #include <SPI.h>
 
-#define LED_COLOR_CHANNEL_COUNT 3
-#define LED_CHANNEL_COUNT 16
+#define COLOR_CHANNEL_COUNT 3
+#define LEDS_PER_CHIP 16
+#define TLC_COUNT 16
 
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
@@ -53,80 +54,83 @@
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
-#define SPI_BAUD_RATE 10000000
+
+#define SPI_BAUD_RATE 1000000
 class TLC5955
 {
 public:
 
-  /* Initialization */
-  void init(uint16_t tlc_count,
-            bool use_as_single_channel,
-            uint8_t gslat,
-            uint8_t spi_mosi,
-            uint8_t spi_clk);
+/* Initialization */
+void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk);
+void deallocate();
 
-  /* Setting individual LED intensities */
-  void setAllLed(uint16_t gsvalue);
-  void setAllLedRgb(uint16_t red, uint16_t green, uint16_t blue);
-  void setLed(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue);
-  void setLed(uint16_t led_number, uint16_t rgb);
-  void setLedAppend(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue);
-  void setChannel(uint16_t channel_number, uint16_t value);
+/* Setting individual LED intensities */
+void setAllLed(uint16_t gsvalue);
+void setAllLedRgb(uint16_t red, uint16_t green, uint16_t blue);
+void setLed(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue);
+void setLed(uint16_t led_number, uint16_t rgb);
+void setLedAppend(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue);
+void setChannel(uint16_t channel_number, uint16_t value);
 
-  /* Get LED Intensities */
-  uint16_t getChannelValue(uint16_t channelNum, int color_channel_index);
+/* Get LED Intensities */
+uint16_t getChannelValue(uint16_t channelNum, int color_channel_index);
 
-  /* Control Mode Parameters */
-  void setBrightnessCurrent(uint8_t global);
-  void setBrightnessCurrent(uint8_t red, uint8_t green, uint8_t blue);
-  void setAllDcData(uint8_t dcvalue);
-  void setLedDc(uint16_t led_number, uint8_t color_channel_index, uint8_t dc_value);
-  void setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB);
-  void setMaxCurrent(uint8_t MCRGB);
-  void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
-  void setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos);
-  void setPinOrderSingle(uint16_t channel, uint8_t color_channel_index, uint8_t position);
+/* Control Mode Parameters */
+void setBrightnessCurrent(uint8_t global);
+void setBrightnessCurrent(uint8_t red, uint8_t green, uint8_t blue);
+void setAllDcData(uint8_t dcvalue);
+void setLedDc(uint16_t led_number, uint8_t color_channel_index, uint8_t dc_value);
+void setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB);
+void setMaxCurrent(uint8_t MCRGB);
+void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
+void setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos);
+void setPinOrderSingle(uint16_t channel, uint8_t color_channel_index, uint8_t position);
+void setRgbPinOrderSingle(uint16_t channel, uint8_t rPos, uint8_t grPos, uint8_t bPos);
 
-  /* Sending data to device (Updating, flushing, latching) */
-  void setBuffer(uint8_t bit);
-  void setControlModeBit(bool isControlMode);
-  void flushBuffer();
-  void updateLeds();
-  void latch();
-  void updateControl();
+/* Sending data to device (Updating, flushing, latching) */
+void setBuffer(uint8_t bit);
+void setControlModeBit(bool isControlMode);
+void flushBuffer();
+void updateLeds();
+void latch();
+void updateControl();
 
-  /* Diagnostic Methods */
-  void printByte(byte myByte);
+/* Diagnostic Methods */
+void printByte(byte myByte);
+
+uint8_t _leds_per_chip = LEDS_PER_CHIP;
+uint8_t _color_channel_count = COLOR_CHANNEL_COUNT;
+uint8_t _tlc_count = TLC_COUNT;
+
+uint8_t _dc_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+uint8_t _rgb_order[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+uint16_t _grayscale_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+
+uint8_t rgb_order_default[3] = {0, 1, 2};
+
+// static const uint8_t tlc_count;
+// static const uint8_t tlc_channel_count;
+// static const uint8_t tlc_channel_color_count;
 
 private:
-  int debug = 0;
-  bool _use_as_single_channel;
-  uint8_t _leds_per_chip;
-  uint8_t _color_channel_count;
-  uint8_t _gslat;
-  uint8_t _spi_mosi;
-  uint8_t _spi_clk;
-  uint8_t _tlc_count;
-  uint8_t _function_data;
-  uint16_t _bright_red;
-  uint16_t _bright_green;
-  uint16_t _bright_blue;
-  uint8_t _MCR;
-  uint8_t _MCG;
-  uint8_t _MCB;
+int debug = 0;
+uint8_t _gslat;
+uint8_t _spi_mosi;
+uint8_t _spi_clk;
 
-  /* uint8_t _dc_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT]; */
-  uint8_t ***_dc_data;
+uint8_t _function_data;
+uint16_t _bright_red;
+uint16_t _bright_green;
+uint16_t _bright_blue;
+uint8_t _MCR;
+uint8_t _MCG;
+uint8_t _MCB;
 
-  /* uint8_t _rgb_order[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT]; */
-  uint8_t ***_rgb_order;
 
-  /* uint16_t _grayscale_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT]; */
-  uint16_t ***_grayscale_data;
 
-  /* SPI */
-  uint8_t _buffer;
-  int8_t _buffer_count;
+/* SPI */
+uint8_t _buffer;
+int8_t _buffer_count = 7;
 };
 
 #endif
