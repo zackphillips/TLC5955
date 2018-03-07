@@ -36,10 +36,6 @@
 #include <Arduino.h>
 #include <SPI.h>
 
-#define COLOR_CHANNEL_COUNT 3
-#define LEDS_PER_CHIP 16
-#define TLC_COUNT 16
-
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
 #define GB_BITS 7
@@ -54,8 +50,8 @@
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
+#define SPI_BAUD_RATE 5000000
 
-#define SPI_BAUD_RATE 1000000
 class TLC5955
 {
 public:
@@ -98,13 +94,21 @@ void updateControl();
 /* Diagnostic Methods */
 void printByte(byte myByte);
 
-uint8_t _leds_per_chip = LEDS_PER_CHIP;
-uint8_t _color_channel_count = COLOR_CHANNEL_COUNT;
-uint8_t _tlc_count = TLC_COUNT;
+// uint8_t _leds_per_chip = LEDS_PER_CHIP;
+// uint8_t _color_channel_count = COLOR_CHANNEL_COUNT;
+// uint8_t _tlc_count = TLC_COUNT;
+//
+// uint8_t _dc_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+// uint8_t _rgb_order[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+// uint16_t _grayscale_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 
-uint8_t _dc_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
-uint8_t _rgb_order[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
-uint16_t _grayscale_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+static const uint8_t _tlc_count; // This
+static const uint8_t COLOR_CHANNEL_COUNT = 3;
+static const uint8_t LEDS_PER_CHIP = 16;
+
+static uint8_t _dc_data[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+static uint8_t _rgb_order[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
+static uint16_t _grayscale_data[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 
 uint8_t rgb_order_default[3] = {0, 1, 2};
 
@@ -125,8 +129,6 @@ uint16_t _bright_blue;
 uint8_t _MCR;
 uint8_t _MCG;
 uint8_t _MCB;
-
-
 
 /* SPI */
 uint8_t _buffer;
