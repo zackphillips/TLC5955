@@ -38,6 +38,9 @@ void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk)
         _spi_mosi = spi_mosi;
         pinMode(_gslat, OUTPUT);
         digitalWrite(_gslat, LOW);
+
+        // Set default color channel indicies
+        setRgbPinOrder(rgb_order_default[0], rgb_order_default[1], rgb_order_default[2]);
 }
 
 void TLC5955::setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos)
@@ -54,7 +57,7 @@ void TLC5955::setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos)
                         }
                 }
         } else
-                Serial.println(F("ERROR (TLC5955::setRgbPinOrder): color channel count is not 3"));
+                Serial.printf(F("ERROR (TLC5955::setRgbPinOrder): Color channel count is not 3 %s"), LINE_ENDING);
 }
 
 void TLC5955::setPinOrderSingle(uint16_t led_number, uint8_t color_channel_index, uint8_t position)
@@ -110,7 +113,7 @@ void TLC5955::setAllLedRgb(uint16_t red, uint16_t green, uint16_t blue)
                         }
                 }
         } else
-                Serial.println(F("ERROR (TLC5955::setAllLedRgb): color channel count is not 3"));
+                Serial.printf(F("ERROR (TLC5955::setAllLedRgb): Color channel count is not 3 %s"), LINE_ENDING);
 }
 
 void TLC5955::flushBuffer()
@@ -168,8 +171,7 @@ void TLC5955::updateLeds()
 {
         if (debug >= 2)
         {
-                Serial.println(F("Begin LED Update String (All Chips)..."));
-                Serial.println(' ');
+                Serial.printf(F("Begin LED Update String (All Chips)...%s"), LINE_ENDING);
         }
 
         for (int16_t chip = (int8_t)_tlc_count - 1; chip >= 0; chip--)
@@ -182,14 +184,12 @@ void TLC5955::updateLeds()
                         for (int8_t color_channel_index = (int8_t)COLOR_CHANNEL_COUNT - 1; color_channel_index >= 0; color_channel_index--)
                         {
                                 color_channel_ordered = _rgb_order[chip][led_channel_index][(uint8_t) color_channel_index];
+                                if ((debug >= 2) && (_grayscale_data[chip][led_channel_index][color_channel_ordered] > 0))
+                                {
+                                        Serial.printf("Chip %d, channel %d, color %d (ordered: %d) has value %d\n", chip, led_channel_index, color_channel_index,color_channel_ordered, _grayscale_data[chip][led_channel_index][color_channel_ordered]);
+                                }
                                 SPI.transfer((char)(_grayscale_data[chip][led_channel_index][color_channel_ordered] >> 8)); // Output MSB first
                                 SPI.transfer((char)(_grayscale_data[chip][led_channel_index][color_channel_ordered] & 0xFF)); // Followed by LSB
-
-                                if (debug >= 2)
-                                {
-                                        printByte((char)(_grayscale_data[chip][led_channel_index][color_channel_ordered] >> 8));
-                                        printByte((char)(_grayscale_data[chip][led_channel_index][color_channel_ordered] & 0xFF));
-                                }
                         }
                 }
                 SPI.endTransaction();
@@ -197,8 +197,7 @@ void TLC5955::updateLeds()
 
         if (debug >= 2)
         {
-                Serial.println(' ');
-                Serial.println(F("End LED Update String (All Chips)"));
+                Serial.printf(F("End LED Update String (All Chips) %s"), LINE_ENDING);
         }
         latch();
 }
@@ -206,14 +205,12 @@ void TLC5955::updateLeds()
 void TLC5955::setChannel(uint16_t channel_number, uint16_t value)
 {
         // Change to multi-channel indexing
-        int16_t channel_number_rgb = (int16_t) round(channel_number / COLOR_CHANNEL_COUNT);
-        int16_t color_channel_number = (int16_t) channel_number % COLOR_CHANNEL_COUNT;
+        int16_t chip_number = floor(channel_number / (COLOR_CHANNEL_COUNT * LEDS_PER_CHIP));
+        int16_t channel_number_new = (int16_t) floor((channel_number - chip_number * LEDS_PER_CHIP * COLOR_CHANNEL_COUNT) / COLOR_CHANNEL_COUNT);
+        int16_t color_channel_number = (int16_t) (channel_number - chip_number * LEDS_PER_CHIP * COLOR_CHANNEL_COUNT) % COLOR_CHANNEL_COUNT;
 
-        // Calculate chip and channel indicies
-        uint8_t chip = (uint16_t)floor(channel_number_rgb / LEDS_PER_CHIP);
-        uint8_t channel = (uint8_t)(channel_number_rgb - LEDS_PER_CHIP * chip);
-
-        _grayscale_data[chip][channel][color_channel_number] = value;
+        // Set grayscale data
+        _grayscale_data[chip_number][channel_number_new][color_channel_number] = value;
 }
 
 void TLC5955::setLed(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue)
@@ -332,7 +329,7 @@ void TLC5955::setLedDc(uint16_t led_number, uint8_t color_channel_number, uint8_
                 uint8_t channel = (uint8_t)(led_number - LEDS_PER_CHIP * chip);
                 _dc_data[chip][channel][color_channel_number] = dc_value;
         } else
-                Serial.println(F("ERROR (TLC5955::setLedDc) : Invalid color channel number"));
+                Serial.printf(F("ERROR (TLC5955::setLedDc) : Invalid color channel number %s"), LINE_ENDING);
 }
 
 // Update the Control Register (changes settings)
@@ -343,7 +340,7 @@ void TLC5955::updateControl()
                 for (int8_t chip = _tlc_count - 1; chip >= 0; chip--)
                 {
                         if (debug >= 2)
-                                Serial.println("Starting Control Mode...");
+                                Serial.printf(F("Starting Control Mode... %s"), LINE_ENDING);
 
                         _buffer_count = 7;
                         setControlModeBit(CONTROL_MODE_ON);

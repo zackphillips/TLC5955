@@ -33,8 +33,8 @@
 #ifndef TLC5955_H
 #define TLC5955_H
 
-#include <Arduino.h>
 #include <SPI.h>
+
 
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
@@ -44,13 +44,16 @@
 #define DC_BITS 7
 #define CONTROL_ZERO_BITS 389   /* Bits required for correct control reg size */
 #define TOTAL_REGISTER_SIZE 76
-
 #define LATCH_DELAY 10
 #define CONTROL_WRITE_COUNT 2
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
+// Serial baud rate
 #define SPI_BAUD_RATE 5000000
+
+// Line ending for serial output
+static const char LINE_ENDING[] = "\n";
 
 class TLC5955
 {
@@ -111,10 +114,6 @@ static uint8_t _rgb_order[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 static uint16_t _grayscale_data[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 
 uint8_t rgb_order_default[3] = {0, 1, 2};
-
-// static const uint8_t tlc_count;
-// static const uint8_t tlc_channel_count;
-// static const uint8_t tlc_channel_color_count;
 
 private:
 int debug = 0;
