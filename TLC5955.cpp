@@ -169,6 +169,22 @@ void TLC5955::setControlModeBit(bool is_control_mode)
 
 void TLC5955::updateLeds()
 {
+        if (enforce_max_current)
+        {
+                // Get number of counts for current pattern
+                uint32_t power_output_counts = 0;
+                for (int16_t chip = (int8_t)_tlc_count - 1; chip >= 0; chip--)
+                        for (int8_t led_channel_index = (int8_t)LEDS_PER_CHIP - 1; led_channel_index >= 0; led_channel_index--)
+                                for (int8_t color_channel_index = (int8_t)COLOR_CHANNEL_COUNT - 1; color_channel_index >= 0; color_channel_index--)
+                                        power_output_counts += _grayscale_data[chip][led_channel_index][color_channel_index];
+
+                double power_output_amps = ((double)power_output_counts / (double)UINT16_MAX) * LED_CURRENT_AMPS;
+                if (power_output_amps > max_current_amps)
+                {
+                        Serial.printf(F("Current output (%.4fA) exceeds maximum current output (%.4fA)%s"), power_output_amps, max_current_amps, LINE_ENDING);
+                        return;
+                }
+        }
         if (debug >= 2)
         {
                 Serial.printf(F("Begin LED Update String (All Chips)...%s"), LINE_ENDING);
@@ -186,7 +202,7 @@ void TLC5955::updateLeds()
                                 color_channel_ordered = _rgb_order[chip][led_channel_index][(uint8_t) color_channel_index];
                                 if ((debug >= 2) && (_grayscale_data[chip][led_channel_index][color_channel_ordered] > 0))
                                 {
-                                        Serial.printf("Chip %d, channel %d, color %d (ordered: %d) has value %d\n", chip, led_channel_index, color_channel_index,color_channel_ordered, _grayscale_data[chip][led_channel_index][color_channel_ordered]);
+                                        Serial.printf("Chip %d, channel %d, color %d (ordered: %d) has value %d %s", chip, led_channel_index, color_channel_index,color_channel_ordered, _grayscale_data[chip][led_channel_index][color_channel_ordered], LINE_ENDING);
                                 }
                                 SPI.transfer((char)(_grayscale_data[chip][led_channel_index][color_channel_ordered] >> 8)); // Output MSB first
                                 SPI.transfer((char)(_grayscale_data[chip][led_channel_index][color_channel_ordered] & 0xFF)); // Followed by LSB

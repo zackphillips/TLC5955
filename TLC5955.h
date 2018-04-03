@@ -35,7 +35,6 @@
 
 #include <SPI.h>
 
-
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
 #define GB_BITS 7
@@ -50,10 +49,13 @@
 #define CONTROL_MODE_OFF 0
 
 // Serial baud rate
-#define SPI_BAUD_RATE 5000000
+#define SPI_BAUD_RATE 1000000
 
 // Line ending for serial output
 static const char LINE_ENDING[] = "\n";
+
+// Current per LED channel
+static const float LED_CURRENT_AMPS = 0.020;
 
 class TLC5955
 {
@@ -108,6 +110,8 @@ void printByte(byte myByte);
 static const uint8_t _tlc_count; // This
 static const uint8_t COLOR_CHANNEL_COUNT = 3;
 static const uint8_t LEDS_PER_CHIP = 16;
+static float max_current_amps;
+static bool enforce_max_current;
 
 static uint8_t _dc_data[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 static uint8_t _rgb_order[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
