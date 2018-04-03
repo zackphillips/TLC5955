@@ -190,6 +190,7 @@ void TLC5955::updateLeds()
                 Serial.printf(F("Begin LED Update String (All Chips)...%s"), LINE_ENDING);
         }
 
+        // uint32_t power_output_counts = 0;
         for (int16_t chip = (int8_t)_tlc_count - 1; chip >= 0; chip--)
         {
                 setControlModeBit(CONTROL_MODE_OFF);
