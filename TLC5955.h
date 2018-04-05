@@ -49,7 +49,7 @@
 #define CONTROL_MODE_OFF 0
 
 // Serial baud rate
-#define SPI_BAUD_RATE 5000000
+#define SPI_BAUD_RATE 4000000
 
 // LED Current OUTPUT
 static const float LED_CURRENT_AMPS = 0.020;
