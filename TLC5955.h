@@ -34,6 +34,7 @@
 #define TLC5955_H
 
 #include <SPI.h>
+#include <Arduino.h>
 
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
@@ -43,13 +44,13 @@
 #define DC_BITS 7
 #define CONTROL_ZERO_BITS 389   /* Bits required for correct control reg size */
 #define TOTAL_REGISTER_SIZE 76
-#define LATCH_DELAY 10
+#define LATCH_DELAY 100
 #define CONTROL_WRITE_COUNT 2
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
 // Serial baud rate
-#define SPI_BAUD_RATE 4000000
+#define SPI_BAUD_RATE 1700000
 
 // LED Current OUTPUT
 static const float LED_CURRENT_AMPS = 0.020;
