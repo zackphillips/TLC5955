@@ -10,7 +10,7 @@ with any Arduino/Genuino microcontroller or similar. It supports all features of
 - PWM spread spectrum (ESPWM flag)
 
 # Installation
-After downloading the [Arduino IDE](http://www.arduino.cc/), open the tlc5955.ino file for an example of how to implement this class in your own sketch. Please note that static variables will need to be initialized in your sketch (I found this was the most efficient of managing memory)
+After downloading the [Arduino IDE](http://www.arduino.cc/), open the tlc5955.ino file for an example of how to implement this class in your own sketch. Please note that static variables will need to be initialized in your sketch (I found this was the most efficient way to manage memory)
 
 ## Grayscale Clock (GSCLK)
 This library works best with a LED clock pulse with a frequency of 1MHz or higher. Most micro-controllers can achieve this, but implementations may be different. For the Teensy, the built-in command ```analogWriteFrequency``` can reliably set the output frequency of a PIN. For other boards, a simple google search should show you which registers to set.
