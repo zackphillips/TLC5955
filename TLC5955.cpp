@@ -184,7 +184,8 @@ void TLC5955::updateLeds()
       Serial.print(F("Current output ("));
       Serial.print(power_output_amps);
       Serial.print(F(") exceeds maximum current output ("));
-      Serial.println(max_current_amps);
+      Serial.print(max_current_amps);
+	  Serial.println(')');
       return;
     }
   }
