@@ -29,18 +29,61 @@
 
 #include "TLC5955.h"
 
-SPISettings mSettings(SPI_BAUD_RATE, MSBFIRST, SPI_MODE0);
-
-void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk)
+void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsclk)
 {
+
   _gslat = gslat;
   _spi_clk = spi_clk;
   _spi_mosi = spi_mosi;
+  _gsclk = gsclk;
+
+  // Initialize SPI library
+  SPI.setMOSI(_spi_mosi);
+  SPI.begin();
+
+  // Set up latch
   pinMode(_gslat, OUTPUT);
   digitalWrite(_gslat, LOW);
 
+  // set up gsclk
+  pinMode(_gsclk, OUTPUT);
+  setGsclkFreq(gsclk_frequency);
+
+  // Define baud rate
+  SPISettings mSettings(spi_baud_rate, MSBFIRST, SPI_MODE0);
+
   // Set default color channel indicies
   setRgbPinOrder(rgb_order_default[0], rgb_order_default[1], rgb_order_default[2]);
+}
+
+void TLC5955::setSpiBaudRate(uint32_t new_baud_rate)
+{
+  // Store old baud rate
+  spi_baud_rate = new_baud_rate;
+
+  // Define baud rate
+  SPISettings mSettings(spi_baud_rate, MSBFIRST, SPI_MODE0);
+}
+
+uint32_t TLC5955::getSpiBaudRate()
+{
+  // Return current baud rate
+  return spi_baud_rate;
+}
+
+void TLC5955::setGsclkFreq(uint32_t new_gsclk_frequency)
+{
+  // Store previous gsclk frequency
+  gsclk_frequency = new_gsclk_frequency;
+
+  analogWriteFrequency(_gsclk, gsclk_frequency);
+  analogWriteResolution(1);
+  analogWrite(_gsclk, 1);
+}
+
+uint32_t TLC5955::getGsclkFreq()
+{
+  return gsclk_frequency;
 }
 
 void TLC5955::setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos)
@@ -270,6 +313,8 @@ void TLC5955::setLed(uint16_t led_number, uint16_t rgb)
   _grayscale_data[chip][channel][0] = rgb;
 }
 
+
+
 void TLC5955::setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB)
 {
   // Ensure max Current agrees with datasheet (3-bit)
@@ -404,11 +449,11 @@ void TLC5955::updateControl()
 
 void TLC5955::latch()
 {
-  digitalWrite(_gslat, LOW);
   delayMicroseconds(LATCH_DELAY);
   digitalWrite(_gslat, HIGH);
   delayMicroseconds(LATCH_DELAY);
   digitalWrite(_gslat, LOW);
+  delayMicroseconds(LATCH_DELAY);
 }
 
 // Get a single channel's current values

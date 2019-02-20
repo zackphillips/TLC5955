@@ -44,13 +44,13 @@
 #define DC_BITS 7
 #define CONTROL_ZERO_BITS 389   /* Bits required for correct control reg size */
 #define TOTAL_REGISTER_SIZE 76
-#define LATCH_DELAY 100
+#define LATCH_DELAY 1
 #define CONTROL_WRITE_COUNT 2
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
 
 // Serial baud rate
-#define SPI_BAUD_RATE 1700000
+#define SPI_BAUD_RATE 1500000
 
 // LED Current OUTPUT
 static const float LED_CURRENT_AMPS = 0.020;
@@ -63,7 +63,7 @@ class TLC5955
 public:
 
 /* Initialization */
-void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk);
+void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsclk);
 void deallocate();
 
 /* Setting individual LED intensities */
@@ -96,6 +96,11 @@ void flushBuffer();
 void updateLeds();
 void latch();
 void updateControl();
+void setSpiBaudRate(uint32_t new_baud_rate);
+uint32_t getSpiBaudRate();
+
+void setGsclkFreq(uint32_t new_gsclk_frequency);
+uint32_t getGsclkFreq();
 
 /* Diagnostic Methods */
 void printByte(byte myByte);
@@ -121,22 +126,26 @@ static uint16_t _grayscale_data[][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
 uint8_t rgb_order_default[3] = {0, 1, 2};
 
 private:
-int debug = 0;
-uint8_t _gslat;
-uint8_t _spi_mosi;
-uint8_t _spi_clk;
+  int debug = 0;
+  uint8_t _gslat;
+  uint8_t _spi_mosi;
+  uint8_t _spi_clk;
+  uint8_t _gsclk;
 
-uint8_t _function_data;
-uint16_t _bright_red;
-uint16_t _bright_green;
-uint16_t _bright_blue;
-uint8_t _MCR;
-uint8_t _MCG;
-uint8_t _MCB;
+  uint8_t _function_data;
+  uint16_t _bright_red;
+  uint16_t _bright_green;
+  uint16_t _bright_blue;
+  uint8_t _MCR;
+  uint8_t _MCG;
+  uint8_t _MCB;
 
-/* SPI */
-uint8_t _buffer;
-int8_t _buffer_count = 7;
+  /* SPI */
+  uint8_t _buffer;
+  int8_t _buffer_count = 7;
+  SPISettings mSettings;
+  uint32_t spi_baud_rate = 1000000;
+  uint32_t gsclk_frequency = 2500000;
 };
 
 #endif
