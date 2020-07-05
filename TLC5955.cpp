@@ -221,7 +221,7 @@ void TLC5955::updateLeds()
   if (power_output_counts == 0) {
     analogWrite(_gsclk, 0);
   } else {
-    setGsclkFreq(gsclk_frequency);
+    analogWrite(_gsclk, 1);
   }
   if (enforce_max_current)
   {
