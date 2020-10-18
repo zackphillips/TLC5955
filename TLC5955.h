@@ -33,8 +33,7 @@
 #ifndef TLC5955_H
 #define TLC5955_H
 
-#include <SPI.h>
-#include <Arduino.h>
+#include <stdint.h>
 
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
@@ -48,9 +47,6 @@
 #define CONTROL_WRITE_COUNT 2
 #define CONTROL_MODE_ON 1
 #define CONTROL_MODE_OFF 0
-
-// Serial baud rate
-#define SPI_BAUD_RATE 1500000
 
 // LED Current OUTPUT
 static const float LED_CURRENT_AMPS = 0.020;
@@ -103,7 +99,7 @@ void setGsclkFreq(uint32_t new_gsclk_frequency);
 uint32_t getGsclkFreq();
 
 /* Diagnostic Methods */
-void printByte(byte myByte);
+void printByte(uint8_t myByte);
 
 // uint8_t _leds_per_chip = LEDS_PER_CHIP;
 // uint8_t _color_channel_count = COLOR_CHANNEL_COUNT;
@@ -143,7 +139,6 @@ private:
   /* SPI */
   uint8_t _buffer;
   int8_t _buffer_count = 7;
-  SPISettings mSettings;
   uint32_t spi_baud_rate = 1000000;
   uint32_t gsclk_frequency = 2500000;
 };
