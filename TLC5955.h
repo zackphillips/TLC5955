@@ -34,6 +34,7 @@
 #define TLC5955_H
 
 #include <stdint.h>
+#include <SPI.h>
 
 /* Bit Quantities (Change to match other TLC driver chips) */
 #define GS_BITS 16
@@ -141,6 +142,8 @@ private:
   int8_t _buffer_count = 7;
   uint32_t spi_baud_rate = 1000000;
   uint32_t gsclk_frequency = 2500000;
+
+  SPISettings mSettings;
 };
 
 #endif
