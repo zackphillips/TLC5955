@@ -36,14 +36,14 @@
 #define SPI_MOSI 11
 #define SPI_CLK 13
 
-const uint8_t TLC5955::_tlc_count = 1;          // Change to reflect number of TLC chips
+const uint8_t TLC5955::chip_count = 1;          // Change to reflect number of TLC chips
 float TLC5955::max_current_amps = 10;      // Maximum current output, amps
 bool TLC5955::enforce_max_current = false;   // Whether to enforce max current limit
 
 // Define dot correction, pin rgb order, and grayscale data arrays in program memory
-uint8_t TLC5955::_dc_data[TLC5955::_tlc_count][TLC5955::LEDS_PER_CHIP][TLC5955::COLOR_CHANNEL_COUNT];
-uint8_t TLC5955::_rgb_order[TLC5955::_tlc_count][TLC5955::LEDS_PER_CHIP][TLC5955::COLOR_CHANNEL_COUNT];
-uint16_t TLC5955::_grayscale_data[TLC5955::_tlc_count][TLC5955::LEDS_PER_CHIP][TLC5955::COLOR_CHANNEL_COUNT];
+uint8_t TLC5955::_dc_data[TLC5955::chip_count][TLC5955::LEDS_PER_CHIP][TLC5955::COLOR_CHANNEL_COUNT];
+uint8_t TLC5955::_rgb_order[TLC5955::chip_count][TLC5955::LEDS_PER_CHIP][TLC5955::COLOR_CHANNEL_COUNT];
+uint16_t TLC5955::_grayscale_data[TLC5955::chip_count][TLC5955::LEDS_PER_CHIP][TLC5955::COLOR_CHANNEL_COUNT];
 
 // Create TLC5955 object
 TLC5955 tlc;
@@ -62,26 +62,26 @@ void setup() {
   tlc.init(LAT, SPI_MOSI, SPI_CLK);
 
   // We must set dot correction values, so set them all to the brightest adjustment
-  tlc.setAllDcData(127);
+  tlc.set_all_dc_data(127);
 
   // Set Max Current Values (see TLC5955 datasheet)
-  tlc.setMaxCurrent(3, 3, 3); // Go up to 7
+  tlc.set_max_current(3, 3, 3); // Go up to 7
 
   // Set Function Control Data Latch values. See the TLC5955 Datasheet for the purpose of this latch.
   // Order: DSPRPT, TMGRST, RFRESH, ESPWM, LSDVLT
-  tlc.setFunctionData(true, true, true, true, true);
+  tlc.set_function_data(true, true, true, true, true);
 
   // set all brightness levels to max (127)
   int currentR = 127;
   int currentB = 127;
   int currentG = 127;
-  tlc.setBrightnessCurrent(currentR, currentB, currentG);
+  tlc.set_brightness_current(currentR, currentB, currentG);
 
   // Update Control Register
-  tlc.updateControl();
+  tlc.update_control();
 
   // Provide LED pin order (R,G,B)
-  tlc.setRgbPinOrder(0, 1, 2);
+  tlc.set_rgb_pin_order(0, 1, 2);
 }
 
 void loop() {

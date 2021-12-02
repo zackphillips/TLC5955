@@ -51,6 +51,7 @@
 
 // Serial baud rate
 #define SPI_BAUD_RATE 1500000
+#define GS_FREQUENCY 2500000
 
 // LED Current OUTPUT
 static const float LED_CURRENT_AMPS = 0.020;
@@ -67,53 +68,48 @@ void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsclk);
 void deallocate();
 
 /* Setting individual LED intensities */
-void setAllLed(uint16_t gsvalue);
-void setAllLedRgb(uint16_t red, uint16_t green, uint16_t blue);
-void setLed(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue);
-void setLed(uint16_t led_number, uint16_t rgb);
-void setLedAppend(uint16_t led_number, uint16_t red, uint16_t green, uint16_t blue);
-void setChannel(uint16_t channel_number, uint16_t value);
+void set_all(uint16_t gsvalue);
+void set_all_rgb(int16_t red, uint16_t green, uint16_t blue);
+void set_single(int16_t led_number, uint16_t rgb);
+void set_single_rgb(int16_t led_number, uint16_t color_channel_index, uint16_t value);
+uint16_t get_rgb(int16_t channel_number, int color_channel_index);
 
-/* Get LED Intensities */
-uint16_t getChannelValue(uint16_t channelNum, int color_channel_index);
+/* Set/get individual pin values (no RGB) */
+void set_single_channel(uint16_t channel_number, uint16_t value);
+uint16_t get_single_channel(uint16_t channel_number);
 
 /* Control Mode Parameters */
-void setBrightnessCurrent(uint8_t global);
-void setBrightnessCurrent(uint8_t red, uint8_t green, uint8_t blue);
-void setAllDcData(uint8_t dcvalue);
-void setLedDc(uint16_t led_number, uint8_t color_channel_index, uint8_t dc_value);
-void setMaxCurrent(uint8_t MCR, uint8_t MCG, uint8_t MCB);
-void setMaxCurrent(uint8_t MCRGB);
-void setFunctionData(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
-void setRgbPinOrder(uint8_t rPos, uint8_t grPos, uint8_t bPos);
-void setPinOrderSingle(uint16_t channel, uint8_t color_channel_index, uint8_t position);
-void setRgbPinOrderSingle(uint16_t channel, uint8_t rPos, uint8_t grPos, uint8_t bPos);
+void set_brightness_current(uint8_t global);
+void set_brightness_current(uint8_t red, uint8_t green, uint8_t blue);
+void set_all_dc_data(uint8_t dcvalue);
+void set_led_dc(int16_t led_number, uint8_t color_channel_index, uint8_t dc_value);
+void set_max_current(uint8_t MCR, uint8_t MCG, uint8_t MCB);
+void set_max_current(uint8_t MCRGB);
+void set_function_data(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPWM, bool LSDVLT);
+void set_rgb_pin_order(uint8_t rPos, uint8_t grPos, uint8_t bPos);
+void set_pin_order_single(int16_t led_number, uint8_t color_channel_index, uint8_t position);
+void set_rgb_pin_order_single(int16_t led_number, uint8_t rPos, uint8_t grPos, uint8_t bPos);
 
 /* Sending data to device (Updating, flushing, latching) */
-void setBuffer(uint8_t bit);
-void setControlModeBit(bool isControlMode);
-void flushBuffer();
-void updateLeds();
+void set_buffer(uint8_t bit);
+void set_control_mode_bit(bool is_control_mode);
+void flush_buffer();
+void update();
 void latch();
-void updateControl();
-void setSpiBaudRate(uint32_t new_baud_rate);
-uint32_t getSpiBaudRate();
+void update_control();
 
-void setGsclkFreq(uint32_t new_gsclk_frequency);
-uint32_t getGsclkFreq();
+/* SPI Baud rate */
+void set_sclk_frequency(uint32_t new_baud_rate);
+uint32_t get_sclk_frequency();
+
+/* GSCLK Frequency */
+void set_gsclk_frequency(uint32_t new_gsclk_frequency);
+uint32_t get_gsclk_frequency();
 
 /* Diagnostic Methods */
-void printByte(byte myByte);
+void print_byte(byte myByte);
 
-// uint8_t _leds_per_chip = LEDS_PER_CHIP;
-// uint8_t _color_channel_count = COLOR_CHANNEL_COUNT;
-// uint8_t _tlc_count = TLC_COUNT;
-//
-// uint8_t _dc_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
-// uint8_t _rgb_order[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
-// uint16_t _grayscale_data[TLC_COUNT][LEDS_PER_CHIP][COLOR_CHANNEL_COUNT];
-
-static const uint8_t _tlc_count; // This
+static const uint8_t chip_count; // This
 static const uint8_t COLOR_CHANNEL_COUNT = 3;
 static const uint8_t LEDS_PER_CHIP = 16;
 static bool enforce_max_current;
@@ -144,8 +140,8 @@ private:
   uint8_t _buffer;
   int8_t _buffer_count = 7;
   SPISettings mSettings;
-  uint32_t spi_baud_rate = 1000000;
-  uint32_t gsclk_frequency = 2500000;
+  uint32_t spi_baud_rate = SPI_BAUD_RATE;
+  uint32_t gsclk_frequency = GS_FREQUENCY;
 };
 
 #endif
