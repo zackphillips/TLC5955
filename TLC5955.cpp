@@ -212,6 +212,9 @@ void TLC5955::update()
     Serial.println(F("Begin LED Update String (All Chips)..."));
   }
 
+  // Disable gsclk
+  digitalWrite(_gsclk, LOW);
+
   for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
   {
     set_control_mode_bit(CONTROL_MODE_OFF);
@@ -229,6 +232,9 @@ void TLC5955::update()
     }
     SPI.endTransaction();
   }
+
+  // Re-enable gsclk
+  set_gsclk_frequency(gsclk_frequency);
 
   if (debug >= 2)
   {
