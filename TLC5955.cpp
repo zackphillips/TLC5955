@@ -215,6 +215,8 @@ void TLC5955::update()
   // Disable gsclk
   digitalWrite(_gsclk, LOW);
 
+  flush_buffer();
+
   for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
   {
     set_control_mode_bit(CONTROL_MODE_OFF);
