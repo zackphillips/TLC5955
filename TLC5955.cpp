@@ -187,6 +187,8 @@ void TLC5955::set_control_mode_bit(bool is_control_mode)
 
 void TLC5955::update()
 {
+  uint32_t previous_gsclk_frequency = 0;
+
   if (enforce_max_current)
   {
     // Get number of counts for current pattern
@@ -213,6 +215,7 @@ void TLC5955::update()
   }
 
   // Disable gsclk
+  previous_gsclk_frequency = gsclk_frequency;
   set_gsclk_frequency(0);
 
   for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
@@ -234,7 +237,7 @@ void TLC5955::update()
   }
 
   // Re-enable gsclk
-  set_gsclk_frequency(gsclk_frequency);
+  set_gsclk_frequency(previous_gsclk_frequency);
 
   if (debug >= 2)
   {
