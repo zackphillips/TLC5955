@@ -95,6 +95,7 @@ void set_buffer(uint8_t bit);
 void set_control_mode_bit(bool is_control_mode);
 void flush_buffer();
 void update();
+void clear();
 void latch();
 void update_control();
 
