@@ -185,43 +185,8 @@ void TLC5955::set_control_mode_bit(bool is_control_mode)
   SPI.begin();
 }
 
-void TLC5955::clear()
-{
-  // Clears the array, maintaining last pattern in memory. Call update to re-enable the pattern.
-
-  if (debug >= 2)
-  {
-    Serial.println(F("Begin LED clear (All Chips)..."));
-  }
-
-  // Disable gsclk
-  uint32_t previous_gsclk_frequency = gsclk_frequency;
-  set_gsclk_frequency(0);
-
-  for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
-  {
-    set_control_mode_bit(CONTROL_MODE_OFF);
-    SPI.beginTransaction(mSettings);
-    uint8_t color_channel_ordered;
-    for (int8_t led_channel_index = (int8_t)LEDS_PER_CHIP - 1; led_channel_index >= 0; led_channel_index--)
-    {
-      for (int8_t color_channel_index = (int8_t)COLOR_CHANNEL_COUNT - 1; color_channel_index >= 0; color_channel_index--)
-      {
-        SPI.transfer((char)(0 >> 8)); // Output MSB first
-        SPI.transfer((char)(0 & 0xFF)); // Followed by LSB
-      }
-    }
-    SPI.endTransaction();
-  }
-
-  // Re-enable gsclk
-  set_gsclk_frequency(previous_gsclk_frequency);
-  latch();
-}
-
 void TLC5955::update()
 {
-  uint32_t previous_gsclk_frequency = 0;
 
   if (enforce_max_current)
   {
@@ -248,10 +213,6 @@ void TLC5955::update()
     Serial.println(F("Begin LED Update String (All Chips)..."));
   }
 
-  // Disable gsclk
-  previous_gsclk_frequency = gsclk_frequency;
-  set_gsclk_frequency(0);
-
   for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
   {
     set_control_mode_bit(CONTROL_MODE_OFF);
@@ -269,9 +230,6 @@ void TLC5955::update()
     }
     SPI.endTransaction();
   }
-
-  // Re-enable gsclk
-  set_gsclk_frequency(previous_gsclk_frequency);
 
   if (debug >= 2)
   {
