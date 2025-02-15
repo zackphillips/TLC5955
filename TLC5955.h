@@ -68,6 +68,7 @@ void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsclk);
 void deallocate();
 
 /* Setting individual LED intensities */
+void clear_without_modifying_pattern();
 void set_all(uint16_t gsvalue);
 void set_all_rgb(int16_t red, uint16_t green, uint16_t blue);
 void set_single(int16_t led_number, uint16_t rgb);
