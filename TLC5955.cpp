@@ -200,7 +200,7 @@ void TLC5955::update()
     double power_output_amps = ((double)power_output_counts / (double)UINT16_MAX) * LED_CURRENT_AMPS;
     if (power_output_amps > max_current_amps)
     {
-      Serial.print(F("Current output ("));
+      Serial.print(F("ERROR: Current output ("));
       Serial.print(power_output_amps);
       Serial.print(F(") exceeds maximum current output ("));
       Serial.print(max_current_amps);
