@@ -37,6 +37,10 @@ void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsc
   _spi_mosi = spi_mosi;
   _gsclk = gsclk;
 
+  // Store SPI settings in the member (a local here would shadow it and the
+  // configured baud rate would never be used)
+  mSettings = SPISettings(spi_baud_rate, MSBFIRST, SPI_MODE0);
+
   // Initialize SPI library
   SPI.setMOSI(_spi_mosi);
   SPI.begin();
@@ -49,9 +53,6 @@ void TLC5955::init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsc
   pinMode(_gsclk, OUTPUT);
   set_gsclk_frequency(gsclk_frequency);
 
-  // Define baud rate
-  SPISettings mSettings(spi_baud_rate, MSBFIRST, SPI_MODE0);
-
   // Set default color channel indicies
   set_rgb_pin_order(rgb_order_default[0], rgb_order_default[1], rgb_order_default[2]);
 }
@@ -62,7 +63,7 @@ void TLC5955::set_sclk_frequency(uint32_t new_baud_rate)
   spi_baud_rate = new_baud_rate;
 
   // Define baud rate
-  SPISettings mSettings(spi_baud_rate, MSBFIRST, SPI_MODE0);
+  mSettings = SPISettings(spi_baud_rate, MSBFIRST, SPI_MODE0);
 }
 
 uint32_t TLC5955::get_sclk_frequency()
@@ -90,7 +91,7 @@ void TLC5955::set_rgb_pin_order(uint8_t rPos, uint8_t grPos, uint8_t bPos)
 {
   if (COLOR_CHANNEL_COUNT == 3)
   {
-    for (int8_t chip = chip_count - 1; chip >= 0; chip--)
+    for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
     {
       for (int8_t channel = 0; channel < LEDS_PER_CHIP; channel++)
       {
@@ -99,7 +100,7 @@ void TLC5955::set_rgb_pin_order(uint8_t rPos, uint8_t grPos, uint8_t bPos)
         _rgb_order[chip][channel][2] = bPos;
       }
     }
-  } 
+  }
   else
     Serial.println(F("ERROR (TLC5955::setRgbPinOrder): Color channel count is not 3"));
 }
@@ -111,7 +112,7 @@ void TLC5955::set_pin_order_single(int16_t led_number, uint8_t color_channel_ind
     uint8_t chip = (uint16_t)floor(led_number / LEDS_PER_CHIP);
     uint8_t channel = (uint8_t)(led_number - LEDS_PER_CHIP * chip);        // Turn that LED on
     _rgb_order[chip][channel][color_channel_index] = position;
-  } 
+  }
   else
     Serial.println(F("ERROR (TLC5955::set_pin_orderSingle): Color channel count is not 3"));
 }
@@ -125,7 +126,7 @@ void TLC5955::set_rgb_pin_order_single(int16_t led_number, uint8_t rPos, uint8_t
     _rgb_order[chip][channel][0] = rPos;
     _rgb_order[chip][channel][1] = grPos;
     _rgb_order[chip][channel][2] = bPos;
-  } 
+  }
   else
     Serial.println(F("ERROR (TLC5955::set_pin_orderSingle): Color channel count is not 3"));
 }
@@ -190,21 +191,14 @@ void TLC5955::update()
 
   if (enforce_max_current)
   {
-    // Get number of counts for current pattern
-    uint32_t power_output_counts = 0;
-    for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
-      for (int8_t led_channel_index = (int8_t)LEDS_PER_CHIP - 1; led_channel_index >= 0; led_channel_index--)
-        for (int8_t color_channel_index = (int8_t)COLOR_CHANNEL_COUNT - 1; color_channel_index >= 0; color_channel_index--)
-          power_output_counts += _grayscale_data[chip][led_channel_index][color_channel_index];
-
-    double power_output_amps = ((double)power_output_counts / (double)UINT16_MAX) * LED_CURRENT_AMPS;
+    double power_output_amps = get_total_current();
     if (power_output_amps > max_current_amps)
     {
       Serial.print(F("ERROR: Current output ("));
       Serial.print(power_output_amps);
       Serial.print(F(") exceeds maximum current output ("));
       Serial.print(max_current_amps);
-	    Serial.println(')');
+      Serial.println(')');
       return;
     }
   }
@@ -213,7 +207,7 @@ void TLC5955::update()
     Serial.println(F("Begin LED Update String (All Chips)..."));
   }
 
-  for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
+  for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
   {
     set_control_mode_bit(CONTROL_MODE_OFF);
     SPI.beginTransaction(mSettings);
@@ -282,7 +276,7 @@ void TLC5955::set_single(int16_t led_number, uint16_t rgb)
 
 void TLC5955::set_all(uint16_t gsvalue)
 {
-  for (int8_t chip = chip_count - 1; chip >= 0; chip--)
+  for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
   {
     for (int8_t a = 0; a < LEDS_PER_CHIP; a++)
     {
@@ -292,11 +286,11 @@ void TLC5955::set_all(uint16_t gsvalue)
   }
 }
 
-void TLC5955::set_all_rgb(int16_t red, uint16_t green, uint16_t blue)
+void TLC5955::set_all_rgb(uint16_t red, uint16_t green, uint16_t blue)
 {
   if (COLOR_CHANNEL_COUNT == 3)
   {
-    for (int8_t chip = chip_count - 1; chip >= 0; chip--)
+    for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
     {
       for (int8_t channel = 0; channel < LEDS_PER_CHIP; channel++)
       {
@@ -316,7 +310,7 @@ void TLC5955::clear_without_modifying_pattern()
     Serial.println(F("Begin temporary clear"));
   }
 
-  for (int16_t chip = (int8_t)chip_count - 1; chip >= 0; chip--)
+  for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
   {
     set_control_mode_bit(CONTROL_MODE_OFF);
     SPI.beginTransaction(mSettings);
@@ -336,6 +330,36 @@ void TLC5955::clear_without_modifying_pattern()
     Serial.println(F("End temporary clear"));
   }
   latch();
+}
+
+// Total sink current (A) of the current grayscale pattern, from TLC5955
+// datasheet (SBVS237) Equation 1 and Table 8:
+//   I = IOLCMax[MC] * (0.262 + 0.738 * DC / 127) * (0.10 + 0.90 * BC / 127) * GS / 65535
+// The GS * DC term is accumulated in integer math; floats are only used
+// once per color channel.
+double TLC5955::get_total_current()
+{
+  // IOLCMax in amps for MC = 0..7
+  static const float IOLC_MAX_AMPS[8] = {
+    3.2e-3, 8.0e-3, 11.2e-3, 15.9e-3, 19.1e-3, 23.9e-3, 27.1e-3, 31.9e-3};
+
+  // Sum of GS * (262 * 127 + 738 * DC), i.e. GS times the DC factor scaled by 127000
+  uint64_t weighted[COLOR_CHANNEL_COUNT] = {0};
+  for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
+    for (uint8_t led = 0; led < LEDS_PER_CHIP; led++)
+      for (uint8_t color = 0; color < COLOR_CHANNEL_COUNT; color++)
+        weighted[color] += (uint64_t)_grayscale_data[chip][led][color] *
+                           (uint32_t)(262UL * 127UL + 738UL * (_dc_data[chip][led][color] & 0x7F));
+
+  const uint8_t mc[3] = {_MCR, _MCG, _MCB};
+  const uint16_t bc[3] = {_bright_red, _bright_green, _bright_blue};
+  double total_amps = 0;
+  for (uint8_t color = 0; color < COLOR_CHANNEL_COUNT; color++)
+  {
+    double channel_scale = IOLC_MAX_AMPS[mc[color] & 0x07] * (0.10 + 0.90 * (bc[color] & 0x7F) / 127.0);
+    total_amps += channel_scale * (double)weighted[color] / (65535.0 * 127000.0);
+  }
+  return total_amps;
 }
 
 // Get a single channel's current values
@@ -393,6 +417,8 @@ void TLC5955::set_function_data(bool DSPRPT, bool TMGRST, bool RFRESH, bool ESPW
 // Set Brightness through CURRENT from 10-100% of value set in function mode
 void TLC5955::set_brightness_current(uint8_t rgb)
 {
+  if (rgb > 127)
+    rgb = 127;
   _bright_red = rgb;
   _bright_green = rgb;
   _bright_blue = rgb;
@@ -401,15 +427,23 @@ void TLC5955::set_brightness_current(uint8_t rgb)
 // Set Brightness through CURRENT from 10-100% of value set in function mode
 void TLC5955::set_brightness_current(uint8_t red, uint8_t green, uint8_t blue)
 {
+  if (red > 127)
+    red = 127;
+  if (green > 127)
+    green = 127;
+  if (blue > 127)
+    blue = 127;
   _bright_red = red;
   _bright_green = green;
   _bright_blue = blue;
 }
 
-// Sets all dot correction data to the same value (default should be 255
+// Sets all dot correction data to the same value (7-bit, max 127)
 void TLC5955::set_all_dc_data(uint8_t dcvalue)
 {
-  for (int8_t chip = chip_count - 1; chip >= 0; chip--)
+  if (dcvalue > 127)
+    dcvalue = 127;
+  for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
   {
     for (int8_t a = LEDS_PER_CHIP - 1; a >= 0; a--)
     {
@@ -425,6 +459,8 @@ void TLC5955::set_led_dc(int16_t led_number, uint8_t color_channel_number, uint8
   {
     uint8_t chip = (uint16_t)floor(led_number / LEDS_PER_CHIP);
     uint8_t channel = (uint8_t)(led_number - LEDS_PER_CHIP * chip);
+    if (dc_value > 127)
+      dc_value = 127;
     _dc_data[chip][channel][color_channel_number] = dc_value;
   } else
     Serial.println(F("ERROR (TLC5955::set_ledDc) : Invalid color channel number"));
@@ -435,13 +471,14 @@ void TLC5955::update_control()
 {
   for (int8_t repeatCtr = 0; repeatCtr < CONTROL_WRITE_COUNT; repeatCtr++)
   {
-    for (int8_t chip = chip_count - 1; chip >= 0; chip--)
+    for (int16_t chip = (int16_t)chip_count - 1; chip >= 0; chip--)
     {
       if (debug >= 2)
-        Serial.println(F("Starting Control Mode... %s"));
+        Serial.println(F("Starting Control Mode..."));
 
       _buffer_count = 7;
       set_control_mode_bit(CONTROL_MODE_ON);
+      SPI.beginTransaction(mSettings);
 
       // Add CONTROL_ZERO_BITS blank bits to get to correct position for DC/FC
       for (int16_t a = 0; a < CONTROL_ZERO_BITS; a++)
@@ -476,7 +513,7 @@ void TLC5955::update_control()
         }
       }
 
-      // if (debug >= 2)
+      SPI.endTransaction();
     }
     latch();
   }
@@ -492,12 +529,11 @@ void TLC5955::latch()
 }
 
 // SPI interface - accumulates single bits, then sends over SPI
-// interface once we accumulate 8 bits
+// interface once we accumulate 8 bits. Caller must hold an SPI transaction.
 void TLC5955::set_buffer(uint8_t bit)
 {
   bitWrite(_buffer, _buffer_count, bit);
   _buffer_count--;
-  SPI.beginTransaction(mSettings);
   if (_buffer_count == -1)
   {
     if (debug >= 2)
@@ -507,5 +543,4 @@ void TLC5955::set_buffer(uint8_t bit)
     _buffer_count = 7;
     _buffer = 0;
   }
-  SPI.endTransaction();
 }

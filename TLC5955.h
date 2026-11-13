@@ -53,9 +53,6 @@
 #define SPI_BAUD_RATE 1500000
 #define GS_FREQUENCY 2500000
 
-// LED Current OUTPUT
-static const float LED_CURRENT_AMPS = 0.020;
-
 // Line ending for serial output
 static const char LINE_ENDING[] = "\n";
 
@@ -65,12 +62,11 @@ public:
 
 /* Initialization */
 void init(uint8_t gslat, uint8_t spi_mosi, uint8_t spi_clk, uint8_t gsclk);
-void deallocate();
 
 /* Setting individual LED intensities */
 void clear_without_modifying_pattern();
 void set_all(uint16_t gsvalue);
-void set_all_rgb(int16_t red, uint16_t green, uint16_t blue);
+void set_all_rgb(uint16_t red, uint16_t green, uint16_t blue);
 void set_single(int16_t led_number, uint16_t rgb);
 void set_single_rgb(int16_t led_number, uint16_t color_channel_index, uint16_t value);
 uint16_t get_rgb(int16_t channel_number, int color_channel_index);
@@ -78,6 +74,9 @@ uint16_t get_rgb(int16_t channel_number, int color_channel_index);
 /* Set/get individual pin values (no RGB) */
 void set_single_channel(uint16_t channel_number, uint16_t value);
 uint16_t get_single_channel(uint16_t channel_number);
+
+/* Estimated total sink current (A) for the current pattern */
+double get_total_current();
 
 /* Control Mode Parameters */
 void set_brightness_current(uint8_t global);
@@ -96,7 +95,6 @@ void set_buffer(uint8_t bit);
 void set_control_mode_bit(bool is_control_mode);
 void flush_buffer();
 void update();
-void clear();
 void latch();
 void update_control();
 
@@ -111,7 +109,7 @@ uint32_t get_gsclk_frequency();
 /* Diagnostic Methods */
 void print_byte(byte myByte);
 
-static const uint8_t chip_count; // This
+static const uint8_t chip_count; // Number of daisy-chained chips, defined in the sketch
 static const uint8_t COLOR_CHANNEL_COUNT = 3;
 static const uint8_t LEDS_PER_CHIP = 16;
 static bool enforce_max_current;
