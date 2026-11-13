@@ -49,39 +49,31 @@ uint16_t TLC5955::_grayscale_data[TLC5955::chip_count][TLC5955::LEDS_PER_CHIP][T
 TLC5955 tlc;
 
 void setup() {
-  // Set pins (non-serial) to output mode
-  pinMode(GSCLK, OUTPUT);
-  pinMode(LAT, OUTPUT);
+  // init() configures SPI, the latch pin, and starts GSCLK (Teensy analogWriteFrequency)
+  tlc.init(LAT, SPI_MOSI, SPI_CLK, GSCLK);
 
-  // Adjust PWM timer for maximum GSCLK frequency
-  analogWrite(GSCLK, 127);
-
-  // The library does not ininiate SPI for you, so as to prevent issues with other SPI libraries
-  SPI.begin();
-
-  tlc.init(LAT, SPI_MOSI, SPI_CLK);
-
-  // We must set dot correction values, so set them all to the brightest adjustment
+  // We must set dot correction values, so set them all to the brightest adjustment (7-bit, max 127)
   tlc.set_all_dc_data(127);
 
-  // Set Max Current Values (see TLC5955 datasheet)
+  // Set Max Current Values (see TLC5955 datasheet Table 8)
   tlc.set_max_current(3, 3, 3); // Go up to 7
 
   // Set Function Control Data Latch values. See the TLC5955 Datasheet for the purpose of this latch.
   // Order: DSPRPT, TMGRST, RFRESH, ESPWM, LSDVLT
   tlc.set_function_data(true, true, true, true, true);
 
-  // set all brightness levels to max (127)
-  int currentR = 127;
-  int currentB = 127;
-  int currentG = 127;
-  tlc.set_brightness_current(currentR, currentB, currentG);
+  // Set all brightness levels to max (7-bit, max 127). Order: R, G, B
+  tlc.set_brightness_current(127, 127, 127);
 
   // Update Control Register
   tlc.update_control();
 
   // Provide LED pin order (R,G,B)
   tlc.set_rgb_pin_order(0, 1, 2);
+
+  // Turn all LEDs on at ~10% and latch
+  tlc.set_all(6553);
+  tlc.update();
 }
 
 void loop() {
