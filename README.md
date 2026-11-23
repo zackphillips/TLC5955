@@ -24,4 +24,4 @@ This library is stable and well-tested using a Teensy 3.2, but may have bugs for
 Contributions are encouraged! Please create a pull request on Github, file an issue, or send me a message on Github.
 
 # License
-BSD
+BSD 3-Clause. See [LICENSE](LICENSE).
